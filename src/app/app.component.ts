@@ -6,7 +6,6 @@ import { SeoService } from './shared/seo.service';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
-import { MaintenanceComponent } from "./components/maintenance/maintenance.component";
 import { ToastContainerComponent } from "./shared/toasts/toast-container.component";
 import { ToastService } from './shared/toasts/toast.service';
 import { ConfirmationComponent } from "./shared/confirmation/confirmation.component";
@@ -21,7 +20,6 @@ import { ConfirmationService } from './shared/confirmation/confirmation.service'
     FooterComponent,
     CommonModule,
     FormsModule,
-    MaintenanceComponent,
     ToastContainerComponent,
     ConfirmationComponent
   ],
@@ -30,8 +28,7 @@ import { ConfirmationService } from './shared/confirmation/confirmation.service'
 })
 export class AppComponent implements OnInit {
   title = 'WebsiteBaseV2';
-  isUnderConstruction = true;
-  private readonly accessPassword = 'lm';
+
 
   // Neue Properties für Scroll-Handling
   isScrolled: boolean = false;
@@ -58,17 +55,6 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Access Control für Under Construction Mode
-    this.route.queryParams.subscribe(params => {
-      const access = params['pw'];
-      if (access === this.accessPassword) {
-        this.isUnderConstruction = false;
-        this.router.navigate([], { queryParams: { pw: null }, queryParamsHandling: 'merge' });
-        sessionStorage.setItem('hasAccess', 'true');
-      } else if (sessionStorage.getItem('hasAccess') === 'true') {
-        this.isUnderConstruction = false;
-      }
-    });
 
     // SEO-Update bei Navigation
     this.router.events

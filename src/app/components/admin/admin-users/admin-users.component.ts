@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../api/api.service';
-import { User, UserRole } from '../../../services/auth.service';
+import { UserRole } from '../../../services/auth.service';
 import { AdminHeaderComponent } from "../admin-header/admin-header.component";
 import { ConfirmationService } from '../../../shared/confirmation/confirmation.service';
+import { User } from '../../../api/api.models';
 
 interface UserStats {
   totalUsers: number;
@@ -46,11 +47,9 @@ export class AdminUsersComponent implements OnInit {
     // Lade Users und Stats parallel
     Promise.all([
       this.api.getAllUsers().toPromise(),
-      this.api.getUserStats().toPromise()
     ])
-      .then(([users, stats]) => {
+      .then(([users]) => {
         this.users = users || [];
-        this.stats = stats || null;
         this.loading = false;
       })
       .catch((err) => {
@@ -204,7 +203,7 @@ export class AdminUsersComponent implements OnInit {
     }
   }
 
-  formatDate(dateString?: Date): string {
+  formatDate(dateString?: string): string {
     if (!dateString) return '-';
 
     const date = new Date(dateString);

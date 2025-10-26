@@ -1,10 +1,10 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { PreviewService } from '../../state/preview.service';
-import { AuthService, User, UserRole } from '../../services/auth.service';
+import { AuthService, UserRole } from '../../services/auth.service';
 import { ToastService } from '../toasts/toast.service';
 import { ConfirmationService } from '../confirmation/confirmation.service';
+import { User } from '../../api/api.models';
 
 @Component({
   selector: 'app-header',
@@ -21,7 +21,6 @@ export class HeaderComponent implements OnInit {
   constructor(
     @Inject(DOCUMENT) private doc: Document,
     public router: Router,
-    private previewService: PreviewService,
     private authService: AuthService,
     private toasts: ToastService,
     private confirmationService: ConfirmationService 
@@ -46,9 +45,6 @@ export class HeaderComponent implements OnInit {
     this.doc.body.style.touchAction = '';
   }
 
-  getPreviewAmmount(): number {
-    return this.previewService.previews().length;
-  }
 
   // GEÄNDERT!
   async logout() {

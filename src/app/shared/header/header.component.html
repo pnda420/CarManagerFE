@@ -9,18 +9,14 @@
       <a (click)="routeTo('/')" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Startseite
       </a>
-      <a (click)="routeTo('/services')" routerLink="/services" routerLinkActive="active">
-        Leistungspakete
+      <a (click)="routeTo('/vehicles')" routerLink="/vehicles" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Meine Fahrzeuge
       </a>
-      <a (click)="routeTo('/faq')" routerLink="/faq" routerLinkActive="active">
-        FAQ
+      <a (click)="routeTo('/create-car')" routerLink="/create-car" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Fahrzeug erstellen
       </a>
-      <a (click)="routeTo('/contact')" routerLink="/contact" routerLinkActive="active">
-        Kontakt
-      </a>
-      <a *ngIf="user" (click)="routeTo('/preview')" routerLink="/preview" routerLinkActive="active">
-        Design Center
-      </a>
+
+
 
       <!-- Auth Links -->
       <ng-container *ngIf="!user">
@@ -32,7 +28,7 @@
 
       <ng-container *ngIf="user">
         <!-- Admin -->
-        <a *ngIf="user.role === UserRole.ADMIN" (click)="routeTo('/admin/requests')" routerLink="/admin/requests"
+        <a *ngIf="user.role === UserRole.ADMIN" (click)="routeTo('/admin/users')" routerLink="/admin/users"
           routerLinkActive="active" class="nav-link--admin">
           <span class="material-symbols-outlined ms-size-20">admin_panel_settings</span>
           Admin

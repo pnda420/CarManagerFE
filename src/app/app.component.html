@@ -1,10 +1,6 @@
-<!-- UNDER CONSTRUCTION SEITE -->
-<div class="page page--maintenance" *ngIf="isUnderConstruction">
-  <app-maintenance></app-maintenance>
-</div>
 
 <!-- NORMALE SEITE -->
-<div class="page" *ngIf="!isUnderConstruction">
+<div class="page">
   @if(router.url !== '/preview') {
   <app-header class="site-header" [class.scrolled]="isScrolled"></app-header>
 

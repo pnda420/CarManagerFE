@@ -2,9 +2,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService, User, UserRole } from '../../services/auth.service';
+import { AuthService, UserRole } from '../../services/auth.service';
 import { PageTitleComponent } from '../../shared/page-title/page-title.component';
 import { ToastService } from '../../shared/toasts/toast.service';
+import { User } from '../../api/api.models';
 
 @Component({
   selector: 'app-profile',
@@ -45,7 +46,7 @@ export class ProfileComponent implements OnInit {
     return this.user?.role === UserRole.ADMIN ? 'Administrator' : 'Benutzer';
   }
 
-  formatDate(dateString: Date | undefined): string {
+  formatDate(dateString: string | undefined): string {
     if (!dateString) return '-';
 
     const date = new Date(dateString);

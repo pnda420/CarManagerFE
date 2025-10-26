@@ -24,29 +24,9 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
 
   routes = [
     {
-      path: 'admin/requests',
-      label: 'Anfragen',
-      icon: 'mail'
-    },
-    {
       path: 'admin/users',
       label: 'User',
       icon: 'group'
-    },
-    {
-      path: 'admin/gen-pages',
-      label: 'KI-Seiten',
-      icon: 'auto_awesome'
-    },
-    {
-      path: 'admin/booking',
-      label: 'Buchungen',
-      icon: 'calendar_today'
-    },
-    {
-      path: 'admin/newsletter',
-      label: 'Newsletter',
-      icon: 'mail'
     },
     {
       path: 'admin/settings',

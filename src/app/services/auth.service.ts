@@ -1,23 +1,16 @@
+// src/app/core/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-
+import { User } from '../api/api.models';
 
 const API_URL = environment.apiUrl;
 
 export enum UserRole {
   USER = 'user',
   ADMIN = 'admin'
-}
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  createdAt: Date;
 }
 
 export interface LoginResponse {
@@ -48,6 +41,7 @@ export class AuthService {
         const user = JSON.parse(userJson);
         this.currentUserSubject.next(user);
       } catch (e) {
+        console.error('Error loading user from storage:', e);
         this.logout();
       }
     }
@@ -60,12 +54,13 @@ export class AuthService {
 
     return this.http.get<User>(`${API_URL}/auth/me`).pipe(
       map(user => {
+        console.log('✅ User von /auth/me:', user);
         localStorage.setItem('current_user', JSON.stringify(user));
         this.currentUserSubject.next(user);
         return user.role === UserRole.ADMIN;
       }),
       catchError((error) => {
-        console.error('Admin-Validierung fehlgeschlagen:', error);
+        console.error('❌ Admin-Validierung fehlgeschlagen:', error);
         if (error.status === 401) {
           this.logout();
         }
@@ -80,7 +75,10 @@ export class AuthService {
       name,
       password
     }).pipe(
-      tap(response => this.handleAuthResponse(response))
+      tap(response => {
+        console.log('✅ Register Response:', response);
+        this.handleAuthResponse(response);
+      })
     );
   }
 
@@ -89,11 +87,15 @@ export class AuthService {
       email,
       password
     }).pipe(
-      tap(response => this.handleAuthResponse(response))
+      tap(response => {
+        console.log('✅ Login Response:', response);
+        this.handleAuthResponse(response);
+      })
     );
   }
 
   logout() {
+    console.log('👋 Logout');
     localStorage.removeItem('access_token');
     localStorage.removeItem('current_user');
     this.currentUserSubject.next(null);
@@ -109,7 +111,10 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken() && !!this.getCurrentUser();
+    const token = this.getToken();
+    const user = this.getCurrentUser();
+    console.log('🔍 isLoggedIn Check - Token:', !!token, 'User:', !!user);
+    return !!token && !!user;
   }
 
   isAdmin(): boolean {
@@ -118,6 +123,10 @@ export class AuthService {
   }
 
   private handleAuthResponse(response: LoginResponse) {
+    console.log('💾 Speichere Auth Response');
+    console.log('🔑 Token:', response.access_token);
+    console.log('👤 User:', response.user);
+    
     localStorage.setItem('access_token', response.access_token);
     localStorage.setItem('current_user', JSON.stringify(response.user));
     this.currentUserSubject.next(response.user);

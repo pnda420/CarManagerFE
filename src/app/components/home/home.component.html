@@ -1,347 +1,77 @@
-<!-- Hero Section mit modernem Gradient Background -->
+
 <section class="hero">
   <div class="glow-spots"></div>
   <div class="hero__backdrop"></div>
   <div class="container">
     <div class="hero__inner">
 
-      <!-- CONTENT -->
       <div class="hero__content">
 
-        <!-- Badge -->
-        <!-- <div class="hero__badge">
-          <span>🍂</span>
-          <span>Oktober-Special: 15% günstiger</span>
-        </div> -->
-
-        <!-- TITEL - JEDER VERSTEHT ES -->
         <h1 class="hero__title">
-          <span class="hero__title-main">Deine Website in 2-4 Wochen</span>
-          <span class="hero__title-sub">Direkt vom Entwickler. Ab 1490€.</span>
+          <span class="hero__title-main">Dein Auto. Dein Tuning-Plan.</span>
+          <span class="hero__title-sub">Garage, Termine & Budget an einem Ort.</span>
         </h1>
 
-        <!-- VALUE PROPS - EINFACHE SPRACHE -->
         <div class="hero__value-props">
           <div class="value-prop">
-            <span class="material-symbols-outlined">check_circle</span>
-            <span>Fester Preis. Keine versteckten Kosten.</span>
+            <span class="material-symbols-outlined">directions_car</span>
+            <span>Auto anlegen & Projekte planen (Stage, Fahrwerk, Felgen …)</span>
           </div>
           <div class="value-prop">
-            <span class="material-symbols-outlined">check_circle</span>
-            <span>Du sprichst direkt mit uns.</span>
-          </div>
-          <div class="value-prop">
-            <span class="material-symbols-outlined">check_circle</span>
-            <span>Schnell. Modern. Einfach.</span>
-          </div>
-        </div>
-
-        <!-- CTA -->
-        <div class="hero__actions">
-          <button class="btn btn--secondary" (click)="router.navigate(['/services'])">
-            <span class="material-symbols-outlined">star_shine</span>
-            <!-- Drei Pakete. Ein Ziel. Ihr Erfolg. -->
-             Pakete ansehen
-          </button>
-          <button class="btn btn--primary" (click)="router.navigate(['/booking'])">
             <span class="material-symbols-outlined">event</span>
-            Kostenloses Gespräch buchen
+            <span>TÜV- & Service-Erinnerungen rechtzeitig per Benachrichtigung</span>
+          </div>
+          <div class="value-prop">
+            <span class="material-symbols-outlined">calculate</span>
+            <span>Volle Kostenübersicht mit Budget- & Kostenrechnern</span>
+          </div>
+        </div>
+
+        <div class="hero__actions">
+          <button class="btn btn--secondary" (click)="router.navigate(['/garage'])">
+            <span class="material-symbols-outlined">add_circle</span>
+            Auto anlegen
+          </button>
+          <button class="btn btn--primary" (click)="router.navigate(['/budget'])">
+            <span class="material-symbols-outlined">calculate</span>
+            Budget & Rechner öffnen
           </button>
         </div>
 
-        <!-- FINDER TEASER -->
-        <div class="finder-teaser" (click)="router.navigate(['/survey'])">
+        <div class="finder-teaser" (click)="router.navigate(['/planner'])">
           <div class="finder-icon">
-            <span class="material-symbols-outlined">auto_awesome</span>
+            <span class="material-symbols-outlined">build</span>
           </div>
           <div class="finder-content">
-            <strong>Weißt nicht, was du brauchst?</strong>
-            <span>Finde in 2 Minuten das richtige Paket</span>
+            <strong>Nicht sicher, womit du startest?</strong>
+            <span>In 2 Minuten deinen Tuning-Plan erstellen</span>
           </div>
           <span class="material-symbols-outlined finder-arrow">arrow_forward</span>
         </div>
 
       </div>
 
-      <!-- VISUAL (Desktop only) -->
       <div class="hero__visual">
-        <div class="visual-card">
-          <img src="assets/company.png" alt="Website Dashboard" />
+        <div class="visual-card visual-card--3d">
+          <model-viewer 
+            src="assets/model/ferrari_296_gt3__www.vecarz.com.glb"
+            alt="Ferrari 488 GT3"
+            auto-rotate
+            rotation-per-second="20deg"
+            camera-orbit="70deg 85deg 65%"
+            min-camera-orbit="auto auto 75%"
+            max-camera-orbit="auto auto 150%"
+            field-of-view="20deg"
+            shadow-intensity="5"
+            shadow-softness="2"
+            exposure="1.3"
+            environment-image="legacy"
+            tone-mapping="aces"
+            style="width: 100%; height: 100%; border-radius: 14px;">
+          </model-viewer>
         </div>
       </div>
 
-    </div>
-  </div>
-</section>
-
-<section class="ai-mockup-hero" role="region" aria-label="KI-Mockup Generator">
-  <div class="container">
-    <div class="hero-grid">
-
-      <!-- Left: Content -->
-      <div class="hero-content">
-        <div class="hero-badge">
-          <span class="badge-glow"></span>
-          <span class="material-symbols-outlined ms-fill">auto_awesome</span>
-          <span>KI-gestützte Website-Vorschau</span>
-        </div>
-
-        <h1 class="hero-title">
-          Verwandle deine Idee in<br>
-          <span class="gradient-text-gold">ein visuelles Design</span>
-        </h1>
-
-        <p class="hero-description">
-          Beschreibe dein Projekt in wenigen Sätzen und lass unsere KI ein erstes Design
-          deiner Website generieren. Perfekt zum Visualisieren deiner Ideen.
-        </p>
-
-        <div class="hero-features">
-          <div class="feature-pill">
-            <span class="material-symbols-outlined ms-fill">speed</span>
-            <span>In wenigen Minuten fertig</span>
-          </div>
-          <div class="feature-pill">
-            <span class="material-symbols-outlined ms-fill">lightbulb</span>
-            <span>KI-optimierte Layouts</span>
-          </div>
-          <div class="feature-pill">
-            <span class="material-symbols-outlined ms-fill">palette</span>
-            <span>Deine Farben & Stil</span>
-          </div>
-        </div>
-
-        <div class="hero-cta">
-          <button class="btn btn--ai btn--large" (click)="routeTo('/preview-form')">
-            <span class="btn-shine"></span>
-            <span class="material-symbols-outlined ms-size-20">auto_awesome</span>
-            Design jetzt erstellen
-          </button>
-          <p class="cta-note">
-            <span class="material-symbols-outlined">check_circle</span>
-            Kostenlos ausprobieren
-          </p>
-        </div>
-      </div>
-
-      <!-- Right: Visual Showcase -->
-      <div class="hero-visual">
-        <div class="mockup-showcase">
-
-          <!-- Main Mockup Card -->
-          <div class="mockup-card mockup-card--main">
-            <div class="mockup-header">
-              <div class="mockup-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div class="ai-badge">
-                <span class="ai-pulse"></span>
-                <span class="material-symbols-outlined">auto_awesome</span>
-              </div>
-            </div>
-            <div class="mockup-content">
-              <div class="mockup-hero">
-                <div class="placeholder-line line-title"></div>
-                <div class="placeholder-line line-subtitle"></div>
-                <div class="placeholder-buttons">
-                  <div class="placeholder-btn"></div>
-                  <div class="placeholder-btn"></div>
-                </div>
-              </div>
-              <div class="mockup-grid">
-                <div class="grid-item" *ngFor="let i of [1,2,3]"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Floating Elements -->
-          <div class="floating-bubble bubble-1">
-            <span class="material-symbols-outlined">brush</span>
-          </div>
-          <div class="floating-bubble bubble-2">
-            <span class="material-symbols-outlined">code</span>
-          </div>
-          <div class="floating-bubble bubble-3">
-            <span class="material-symbols-outlined">psychology</span>
-          </div>
-
-          <!-- AI Sparkles -->
-          <div class="sparkle sparkle-1">✨</div>
-          <div class="sparkle sparkle-2">⭐</div>
-          <div class="sparkle sparkle-3">💫</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- PROJEKT-FINDER HIGHLIGHT SECTION -->
-<section class="project-finder" role="region" aria-label="Projekt-Finder">
-  <div class="container">
-    <div class="finder__card">
-      <!-- Left: Content -->
-      <div class="finder__content">
-        <div class="finder__badge">
-          <span class="material-symbols-outlined ms-fill">auto_awesome</span>
-          <span>NEU: Interaktiver Projekt-Finder</span>
-        </div>
-
-        <h2 class="finder__title">
-          Finde in 2 Minuten dein<br>
-          <span class="gradient-text">perfektes Website-Paket</span>
-        </h2>
-
-        <p class="finder__description">
-          Beantworte ein paar kurze Fragen und erhalte sofort eine personalisierte Empfehlung
-          inkl. Preis-Einschätzung – kostenlos und unverbindlich.
-        </p>
-
-        <div class="finder__features">
-          <div class="feature-item">
-            <span class="material-symbols-outlined ms-fill">schedule</span>
-            <span>Nur 1-2 Minuten</span>
-          </div>
-          <div class="feature-item">
-            <span class="material-symbols-outlined ms-fill">recommend</span>
-            <span>Personalisierte Empfehlung</span>
-          </div>
-          <div class="feature-item">
-            <span class="material-symbols-outlined ms-fill">savings</span>
-            <span>Direkte Preiseinschätzung</span>
-          </div>
-        </div>
-
-        <div class="finder__actions">
-          <button class="btn btn--primary btn--large" (click)="router.navigate(['/survey'])">
-            <span class="material-symbols-outlined ms-size-20">play_circle</span>
-            Los geht's!
-          </button>
-          <p class="finder__note">
-            <span class="material-symbols-outlined">lock</span>
-            Keine Anmeldung erforderlich
-          </p>
-        </div>
-      </div>
-
-      <!-- Right: Visual Preview -->
-      <div class="finder__visual">
-        <div class="preview-card">
-          <div class="preview-header">
-            <div class="preview-dots">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-            <span class="preview-title">Projekt-Finder</span>
-          </div>
-          <div class="preview-content">
-            <div class="preview-step">
-              <div class="step-icon">🎯</div>
-              <div class="step-text">
-                <div class="step-title">Was passt zu deinem Vorhaben?</div>
-                <div class="step-options">
-                  <div class="option-pill active">📄 Eine Seite</div>
-                  <div class="option-pill">📑 Mehrere Seiten</div>
-                  <div class="option-pill">⚙️ Individuell</div>
-                </div>
-              </div>
-            </div>
-            <div class="preview-progress">
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: 28%"></div>
-              </div>
-              <span class="progress-text">Schritt 2 von 7</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Floating Elements für "Wow"-Effekt -->
-        <div class="floating-element floating-element--1">
-          <span class="material-symbols-outlined">check_circle</span>
-        </div>
-        <div class="floating-element floating-element--2">
-          <span class="material-symbols-outlined">lightbulb</span>
-        </div>
-        <div class="floating-element floating-element--3">
-          <span class="material-symbols-outlined">stars</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- Prozess mit Timeline-Design -->
-<section class="process" role="region" aria-label="Ablauf">
-  <div class="container">
-    <header class="section-head">
-      <h2 class="section-title">So läuft's ab</h2>
-    </header>
-    <div class="process__timeline">
-      <div class="process__step" *ngFor="let step of processSteps; let i = index">
-        <div class="step__number">{{ i + 1 }}</div>
-        <div class="step__content">
-          <h3>{{ step.title }}</h3>
-          <p>{{ step.description }}</p>
-        </div>
-      </div>
-    </div>
-    <div class="process__cta">
-      <button class="btn btn--ghost" (click)="router.navigate(['/process'])">
-        Detaillierter Projektablauf
-        <span class="material-symbols-outlined ms-size-20">arrow_forward</span>
-      </button>
-    </div>
-  </div>
-</section>
-
-<!-- CTA Section mit Glassmorphism -->
-<section class="cta-main" role="region" aria-label="Kontaktaufnahme">
-  <div class="container">
-    <div class="cta__card">
-      <div class="cta__content">
-        <h2>Lass uns über dein Projekt sprechen</h2>
-        <div class="cta__info">
-          <p class="cta__heading">Kostenloses Erstgespräch (30 Min):</p>
-          <ul class="cta__benefits">
-            <li>
-              <span class="material-symbols-outlined ms-size-20 ms-fill">check</span>
-              Klärung deiner Anforderungen & Ziele
-            </li>
-            <li>
-              <span class="material-symbols-outlined ms-size-20 ms-fill">check</span>
-              Einschätzung von Aufwand & Kosten
-            </li>
-            <li>
-              <span class="material-symbols-outlined ms-size-20 ms-fill">check</span>
-              Konkrete nächste Schritte & Timeline
-            </li>
-            <li>
-              <span class="material-symbols-outlined ms-size-20 ms-fill">check</span>
-              Keine Verpflichtung, kein Sales-Druck
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="cta__actions">
-        <!-- Primary CTA -->
-        <button class="btn btn--primary btn--large" (click)="router.navigate(['/booking'])">
-          <span class="material-symbols-outlined ms-size-20">event</span>
-          Kostenloses Erstgespräch buchen
-        </button>
-
-        <!-- Alternative Option -->
-        <p class="cta__alternative">
-          Noch unsicher?
-          <a class="link" (click)="router.navigate(['/survey'])">
-            Beantworte 7 Fragen
-          </a>
-          und finde in 2 Minuten das passende Paket
-        </p>
-      </div>
     </div>
   </div>
 </section>
