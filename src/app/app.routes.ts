@@ -8,18 +8,20 @@ import { RegisterComponent } from './components/register/register.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { AdminUsersComponent } from './components/admin/admin-users/admin-users.component';
 import { CarOverviewComponent } from './components/car-overview/car-overview.component';
-import { CreateCarComponent } from './components/create-car/create-car.component';
+import { CarDetailComponent } from './components/car-detail/car-detail.component';
+import { CarsExplorerComponent } from './components/cars-explorer/cars-explorer.component';
 
 
-const pageMainName = 'LeonardsMedia';
+const pageMainName = 'pndaCM';
 export const routes: Routes = [
-    { path: '', component: HomeComponent, title: pageMainName, data: { description: 'IT-Dienstleistungen, Webentwicklung und SEO – pragmatisch, transparent und zuverlässig. LeonardsMedia hilft Ihnen bei Konzeption, Entwicklung und Betrieb.' } },
-    { path: 'imprint', component: ImprintComponent, title: pageMainName + ' | Impressum', data: { description: 'Impressum von LeonardsMedia.' } },
-    { path: 'login', component: LoginComponent, title: pageMainName + ' | Login', data: { description: 'Login von LeonardsMedia.' } },
-    { path: 'profile', component: ProfileComponent, title: pageMainName + ' | Profil', data: { description: 'Profil von LeonardsMedia.' } },
-    { path: 'register', component: RegisterComponent, title: pageMainName + ' | Register', data: { description: 'Register von LeonardsMedia.' } },
+    { path: '', component: HomeComponent, title: pageMainName, data: { description: 'IT-Dienstleistungen, Webentwicklung und SEO – pragmatisch, transparent und zuverlässig. pndaCM hilft Ihnen bei Konzeption, Entwicklung und Betrieb.' } },
+    { path: 'imprint', component: ImprintComponent, title: pageMainName + ' | Impressum', data: { description: 'Impressum von pndaCM.' } },
+    { path: 'login', component: LoginComponent, title: pageMainName + ' | Login', data: { description: 'Login von pndaCM.' } },
+    { path: 'profile', component: ProfileComponent, title: pageMainName + ' | Profil', data: { description: 'Profil von pndaCM.' } },
+    { path: 'register', component: RegisterComponent, title: pageMainName + ' | Register', data: { description: 'Register von pndaCM.' } },
 
-    { path: 'create-car', component: CreateCarComponent, title: pageMainName + ' | Neues Fahrzeug', data: { description: 'Neues Fahrzeug von LeonardsMedia.' } },
-    { path: 'vehicles', component: CarOverviewComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von LeonardsMedia.' } },
-    { path: 'admin/users', component: AdminUsersComponent, canActivate: [authGuard, adminGuard], title: pageMainName + ' | Admin Users', data: { description: 'Admin Users von LeonardsMedia.' } },
+    { path: 'explorer', component: CarsExplorerComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von pndaCM.' } },
+    { path: 'mygarage', component: CarOverviewComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von pndaCM.' } },
+    { path: 'vehicles/:id', component: CarDetailComponent, title: pageMainName + ' | Fahrzeug Details', data: { description: 'Fahrzeug Details von pndaCM.' } },
+    { path: 'admin/users', component: AdminUsersComponent, canActivate: [authGuard, adminGuard], title: pageMainName + ' | Admin Users', data: { description: 'Admin Users von pndaCM.' } },
 ];

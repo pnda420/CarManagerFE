@@ -6,9 +6,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Domain setzen – per ENV überschreibbar:
- *   BASE_URL=https://leonardsmedia.de npm run build
+ *   BASE_URL=https://pndaCM.de npm run build
  */
-const BASE_URL = (process.env.BASE_URL || "https://leonardsmedia.de").replace(/\/+$/, "");
+const BASE_URL = (process.env.BASE_URL || "https://pndaCM.de").replace(/\/+$/, "");
 
 /**
  * Statische, öffentliche Routen (aus deiner Liste, aber ohne Admin/Auth/Preview).

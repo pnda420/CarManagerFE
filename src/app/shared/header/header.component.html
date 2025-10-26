@@ -2,24 +2,20 @@
   <div class="container header__inner">
 
     <!-- Logo -->
-    <img class="brand" src="assets/LM_Logos/Logo1.png" alt="LeonardsMedia" decoding="async" (click)="routeTo('/')" />
+    <img class="brand" src="assets/LM_Logos/Logo1.png" alt="pndaCM" decoding="async" (click)="routeTo('/')" />
 
     <!-- Navigation -->
     <nav id="primary-nav" class="nav" [class.open]="open">
       <a (click)="routeTo('/')" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
         Startseite
       </a>
-      <a (click)="routeTo('/vehicles')" routerLink="/vehicles" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Meine Fahrzeuge
-      </a>
-      <a (click)="routeTo('/create-car')" routerLink="/create-car" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        Fahrzeug erstellen
-      </a>
+
 
 
 
       <!-- Auth Links -->
       <ng-container *ngIf="!user">
+
         <a (click)="routeTo('/login')" routerLink="/login" routerLinkActive="active" class="nav-link--primary">
           <span class="material-symbols-outlined ms-size-20">login</span>
           Login
@@ -27,12 +23,27 @@
       </ng-container>
 
       <ng-container *ngIf="user">
+
+
+        <a (click)="routeTo('/mygarage')" routerLink="/mygarage" routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }">
+          Meine Garage
+        </a>
+        <a (click)="routeTo('/explorer')" routerLink="/explorer" routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }">
+          Alle Fahrzeuge
+        </a>
+
+
+
         <!-- Admin -->
         <a *ngIf="user.role === UserRole.ADMIN" (click)="routeTo('/admin/users')" routerLink="/admin/users"
           routerLinkActive="active" class="nav-link--admin">
           <span class="material-symbols-outlined ms-size-20">admin_panel_settings</span>
           Admin
         </a>
+
+
 
         <!-- Profile -->
         <a (click)="routeTo('/profile')" routerLink="/profile" routerLinkActive="active" class="nav-link--user">

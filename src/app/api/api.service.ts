@@ -12,11 +12,11 @@ import { CreateUserDto, User, LoginDto, LoginResponse, UpdateUserDto, CreateCarD
 export class ApiService {
   private readonly apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private getHeaders(): HttpHeaders {
     return new HttpHeaders({
-      'Content-Type': 'application/json'
+      'Content-Type': 'appl ication/json'
     });
   }
 
@@ -66,14 +66,32 @@ export class ApiService {
     });
   }
 
+  getCarById(id: string): Observable<Car> {
+    return this.http.get<Car>(`${this.apiUrl}/cars/${id}`, {
+      headers: this.getHeaders()
+    });
+  }
+
   getAllCars(): Observable<Car[]> {
     return this.http.get<Car[]>(`${this.apiUrl}/cars`, {
       headers: this.getHeaders()
     });
   }
 
+  getAllCarsGlobal(): Observable<Car[]> {
+    return this.http.get<Car[]>(`${this.apiUrl}/cars/all`, {
+      headers: this.getHeaders()
+    });
+  }
+
   getCar(id: string): Observable<Car> {
     return this.http.get<Car>(`${this.apiUrl}/cars/${id}`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  getCarGlobal(id: string): Observable<Car> {
+    return this.http.get<Car>(`${this.apiUrl}/cars/all/${id}`, {
       headers: this.getHeaders()
     });
   }

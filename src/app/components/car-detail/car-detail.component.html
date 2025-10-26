@@ -1,0 +1,294 @@
+<section class="car-detail-page" *ngIf="!loading && car">
+  <div class="container">
+
+    <!-- Header Actions -->
+    <div class="page-header">
+      <button class="btn btn--back" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span class="btn-text">Zurück</span>
+      </button>
+      <div class="header-actions" *ngIf="isOwnerUser">
+        <button class="btn btn--icon-only btn--secondary" (click)="openEditModal()">
+          <span class="material-symbols-outlined">edit</span>
+        </button>
+        <button class="btn btn--icon-only btn--danger" (click)="deleteCar()">
+          <span class="material-symbols-outlined">delete</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Title Section - Mobile -->
+    <div class="mobile-title">
+      <h1>{{ car.name }}</h1>
+      <p class="subtitle">{{ car.make }} {{ car.model }}</p>
+      <div class="title-meta">
+        <span *ngIf="car.modelYear">{{ car.modelYear }}</span>
+        <span *ngIf="car.licensePlate">{{ car.licensePlate }}</span>
+      </div>
+
+      <!-- Owner Info (Mobile) -->
+      <div class="owner-info">
+        <div class="owner-avatar">{{ ownerInitials$ | async }}</div>
+        <span class="owner-name">{{ ownerName$ | async }}</span>
+      </div>
+    </div>
+
+    <!-- Title Section - Desktop -->
+    <div class="desktop-title">
+      <div class="title-left">
+        <h1>{{ car.name }}</h1>
+        <p class="subtitle">{{ car.make }} {{ car.model }}</p>
+        <div class="title-meta">
+          <span *ngIf="car.modelYear">{{ car.modelYear }}</span>
+          <span *ngIf="car.licensePlate">{{ car.licensePlate }}</span>
+        </div>
+      </div>
+      <div class="title-right">
+        <div class="owner-info owner-info--desktop">
+          <div class="owner-avatar">{{ ownerInitials$ | async }}</div>
+          <div class="owner-text">
+            <span class="owner-label">Besitzer</span>
+            <span class="owner-name">{{ ownerName$ | async }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Gallery -->
+    <div class="gallery-section">
+      <div class="main-image">
+        <img [src]="getCurrentImage()" [alt]="car.name">
+
+        <!-- Navigation -->
+        <button class="nav-btn nav-prev" (click)="previousImage()" 
+          *ngIf="car.images && car.images.length > 1">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <button class="nav-btn nav-next" (click)="nextImage()" 
+          *ngIf="car.images && car.images.length > 1">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+
+        <!-- Counter -->
+        <div class="image-counter" *ngIf="car.images && car.images.length > 1">
+          {{ currentImageIndex + 1 }}/{{ car.images.length }}
+        </div>
+      </div>
+
+      <!-- Thumbnails -->
+      <div class="thumbnails" *ngIf="car.images && car.images.length > 1">
+        <div class="thumbnail" 
+          *ngFor="let img of car.images; let i = index"
+          [class.active]="i === currentImageIndex"
+          (click)="selectImage(i)">
+          <img [src]="img.image" [alt]="'Bild ' + (i + 1)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <span class="material-symbols-outlined">speed</span>
+        <div class="stat-content">
+          <span class="stat-value">{{ car.horsepowerPs }}</span>
+          <span class="stat-label">PS</span>
+        </div>
+      </div>
+      <div class="stat-card" *ngIf="car.torqueNm">
+        <span class="material-symbols-outlined">settings</span>
+        <div class="stat-content">
+          <span class="stat-value">{{ car.torqueNm }}</span>
+          <span class="stat-label">Nm</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-symbols-outlined">straighten</span>
+        <div class="stat-content">
+          <span class="stat-value">{{ formatMileageShort(car.mileageKm) }}</span>
+          <span class="stat-label">KM</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-symbols-outlined">local_gas_station</span>
+        <div class="stat-content">
+          <span class="stat-value">{{ getFuelShort(car.fuel) }}</span>
+          <span class="stat-label">Kraftstoff</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maintenance Alerts -->
+    <div class="maintenance-alerts" *ngIf="car.nextServiceDate || car.nextTuvDate">
+      <div class="alert-card" *ngIf="car.nextServiceDate">
+        <div class="alert-icon">
+          <span class="material-symbols-outlined">build</span>
+        </div>
+        <div class="alert-content">
+          <span class="alert-label">Nächster Service</span>
+          <span class="alert-date">{{ formatDate(car.nextServiceDate) }}</span>
+          <span class="alert-km" *ngIf="car.nextServiceKm">{{ formatMileageShort(car.nextServiceKm) }}</span>
+        </div>
+        <span class="alert-status" [ngClass]="getServiceStatus().class">
+          {{ getServiceStatus().text }}
+        </span>
+      </div>
+
+      <div class="alert-card" *ngIf="car.nextTuvDate">
+        <div class="alert-icon">
+          <span class="material-symbols-outlined">verified</span>
+        </div>
+        <div class="alert-content">
+          <span class="alert-label">Nächster TÜV</span>
+          <span class="alert-date">{{ formatDate(car.nextTuvDate) }}</span>
+        </div>
+        <span class="alert-status" [ngClass]="getTuvStatus().class">
+          {{ getTuvStatus().text }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Details Sections -->
+    <div class="details-wrapper">
+
+      <!-- Motor & Antrieb -->
+      <div class="detail-section">
+        <button class="section-header" (click)="toggleSection('engine')">
+          <div class="section-title">
+            <span class="material-symbols-outlined">engineering</span>
+            <span>Motor & Antrieb</span>
+          </div>
+          <span class="material-symbols-outlined">
+            {{ expandedSections.engine ? 'expand_less' : 'expand_more' }}
+          </span>
+        </button>
+        <div class="section-content" *ngIf="expandedSections.engine">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Hubraum</span>
+              <span class="value">{{ car.displacementCc ? car.displacementCc + ' ccm' : '-' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Aufladung</span>
+              <span class="value">{{ getInductionLabel(car.induction) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="car.displacementCc && car.horsepowerPs">
+              <span class="label">PS/Liter</span>
+              <span class="value">{{ calculatePowerPerLiter() }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Getriebe</span>
+              <span class="value">{{ getTransmissionLabel(car.transmission) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="car.gears">
+              <span class="label">Gänge</span>
+              <span class="value">{{ car.gears }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Antrieb</span>
+              <span class="value">{{ getDrivetrainLabel(car.drivetrain) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance -->
+      <div class="detail-section" *ngIf="car.zeroToHundredS || car.topSpeedKmh || car.kerbWeightKg || car.consumptionLPer100km">
+        <button class="section-header" (click)="toggleSection('performance')">
+          <div class="section-title">
+            <span class="material-symbols-outlined">sports_score</span>
+            <span>Performance</span>
+          </div>
+          <span class="material-symbols-outlined">
+            {{ expandedSections.performance ? 'expand_less' : 'expand_more' }}
+          </span>
+        </button>
+        <div class="section-content" *ngIf="expandedSections.performance">
+          <div class="detail-grid">
+            <div class="detail-item highlight" *ngIf="car.zeroToHundredS">
+              <span class="label">0-100 km/h</span>
+              <span class="value">{{ car.zeroToHundredS }} s</span>
+            </div>
+            <div class="detail-item highlight" *ngIf="car.topSpeedKmh">
+              <span class="label">Vmax</span>
+              <span class="value">{{ car.topSpeedKmh }} km/h</span>
+            </div>
+            <div class="detail-item" *ngIf="car.kerbWeightKg && car.horsepowerPs">
+              <span class="label">Leistungsgewicht</span>
+              <span class="value">{{ calculatePowerToWeight() }}</span>
+            </div>
+            <div class="detail-item" *ngIf="car.consumptionLPer100km">
+              <span class="label">Verbrauch</span>
+              <span class="value">{{ car.consumptionLPer100km }} l/100km</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Karosserie -->
+      <div class="detail-section">
+        <button class="section-header" (click)="toggleSection('body')">
+          <div class="section-title">
+            <span class="material-symbols-outlined">directions_car</span>
+            <span>Karosserie</span>
+          </div>
+          <span class="material-symbols-outlined">
+            {{ expandedSections.body ? 'expand_less' : 'expand_more' }}
+          </span>
+        </button>
+        <div class="section-content" *ngIf="expandedSections.body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Typ</span>
+              <span class="value">{{ getBodyTypeLabel(car.bodyType) }}</span>
+            </div>
+            <div class="detail-item" *ngIf="car.kerbWeightKg">
+              <span class="label">Gewicht</span>
+              <span class="value">{{ car.kerbWeightKg }} kg</span>
+            </div>
+            <div class="detail-item" *ngIf="car.doors">
+              <span class="label">Türen</span>
+              <span class="value">{{ car.doors }}</span>
+            </div>
+            <div class="detail-item" *ngIf="car.seats">
+              <span class="label">Sitze</span>
+              <span class="value">{{ car.seats }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIN -->
+      <div class="detail-section" *ngIf="car.vin">
+        <button class="section-header" (click)="toggleSection('vin')">
+          <div class="section-title">
+            <span class="material-symbols-outlined">fingerprint</span>
+            <span>FIN/VIN</span>
+          </div>
+          <span class="material-symbols-outlined">
+            {{ expandedSections.vin ? 'expand_less' : 'expand_more' }}
+          </span>
+        </button>
+        <div class="section-content" *ngIf="expandedSections.vin">
+          <div class="vin-display">{{ car.vin }}</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- Loading -->
+<div class="loading-container" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Lade Auto...</p>
+</div>
+
+<!-- Edit Modal -->
+<app-car-form-modal 
+  [car]="car" 
+  [show]="showEditModal" 
+  (close)="closeEditModal()" 
+  (success)="onCarUpdated($event)">
+</app-car-form-modal>

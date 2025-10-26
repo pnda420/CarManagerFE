@@ -1,0 +1,342 @@
+<section class="explorer-page">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-info">
+        <h1>Auto Explorer</h1>
+        <p>{{ filteredCars.length }} von {{ allCars.length }} Autos</p>
+      </div>
+      <button class="btn btn--filter" (click)="toggleFilters()">
+        <span class="material-symbols-outlined">tune</span>
+        <span class="btn-text">Filter</span>
+        <span class="filter-badge" *ngIf="hasActiveFilters()">{{ filteredCars.length }}</span>
+      </button>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar" *ngIf="!loading && allCars.length > 0">
+      <div class="stat">
+        <span class="material-symbols-outlined">directions_car</span>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.totalCars }}</span>
+          <span class="stat-label">Autos</span>
+        </div>
+      </div>
+      <div class="stat">
+        <span class="material-symbols-outlined">speed</span>
+        <div class="stat-content">
+          <span class="stat-value">{{ stats.avgPower }}</span>
+          <span class="stat-label">Ø PS</span>
+        </div>
+      </div>
+      <div class="stat">
+        <span class="material-symbols-outlined">straighten</span>
+        <div class="stat-content">
+          <span class="stat-value">{{ formatMileage(stats.avgMileage) }}</span>
+          <span class="stat-label">Ø KM</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filters Display -->
+    <div class="active-filters" *ngIf="!loading && hasActiveFilters()">
+      <div class="filter-tag" *ngIf="filters.search">
+        <span>Suche: "{{ filters.search }}"</span>
+        <button (click)="filters.search = ''; applyFilters()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="filter-tag" *ngIf="filters.fuel !== 'all'">
+        <span>{{ getFuelLabel(filters.fuel) }}</span>
+        <button (click)="filters.fuel = 'all'; applyFilters()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="filter-tag" *ngIf="filters.transmission !== 'all'">
+        <span>{{ getTransmissionLabel(filters.transmission) }}</span>
+        <button (click)="filters.transmission = 'all'; applyFilters()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="filter-tag" *ngIf="filters.drivetrain !== 'all'">
+        <span>{{ getDrivetrainLabel(filters.drivetrain) }}</span>
+        <button (click)="filters.drivetrain = 'all'; applyFilters()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="filter-tag" *ngIf="filters.bodyType !== 'all'">
+        <span>{{ getBodyTypeLabel(filters.bodyType) }}</span>
+        <button (click)="filters.bodyType = 'all'; applyFilters()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <button class="clear-all-btn" (click)="resetFilters()">
+        Alle löschen
+      </button>
+    </div>
+
+    <!-- Sorting Bar -->
+    <div class="sorting-bar" *ngIf="!loading && filteredCars.length > 0">
+      <div class="sorting-label">
+        <span class="material-symbols-outlined">sort</span>
+        <span>Sortierung:</span>
+      </div>
+      <div class="sorting-options">
+        <button class="sort-btn" 
+                [class.active]="filters.sortBy === 'name'"
+                (click)="setSorting('name')">
+          <span>Name</span>
+          <span class="material-symbols-outlined" *ngIf="filters.sortBy === 'name'">
+            {{ filters.sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+          </span>
+        </button>
+        <button class="sort-btn" 
+                [class.active]="filters.sortBy === 'power'"
+                (click)="setSorting('power')">
+          <span>Leistung</span>
+          <span class="material-symbols-outlined" *ngIf="filters.sortBy === 'power'">
+            {{ filters.sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+          </span>
+        </button>
+        <button class="sort-btn" 
+                [class.active]="filters.sortBy === 'year'"
+                (click)="setSorting('year')">
+          <span>Baujahr</span>
+          <span class="material-symbols-outlined" *ngIf="filters.sortBy === 'year'">
+            {{ filters.sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+          </span>
+        </button>
+        <button class="sort-btn" 
+                [class.active]="filters.sortBy === 'mileage'"
+                (click)="setSorting('mileage')">
+          <span>Kilometerstand</span>
+          <span class="material-symbols-outlined" *ngIf="filters.sortBy === 'mileage'">
+            {{ filters.sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-container" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Lade Autos...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && filteredCars.length === 0 && !hasActiveFilters()">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">search_off</span>
+      </div>
+      <h3>Keine Autos gefunden</h3>
+      <p>Es wurden noch keine Autos angelegt</p>
+    </div>
+
+    <!-- No Results -->
+    <div class="empty-state" *ngIf="!loading && filteredCars.length === 0 && hasActiveFilters()">
+      <div class="empty-icon">
+        <span class="material-symbols-outlined">filter_alt_off</span>
+      </div>
+      <h3>Keine Treffer</h3>
+      <p>Versuche andere Filter</p>
+      <button class="btn btn--primary" (click)="resetFilters()">
+        Filter zurücksetzen
+      </button>
+    </div>
+
+    <!-- Cars Grid -->
+    <div class="cars-grid" *ngIf="!loading && filteredCars.length > 0">
+      <div class="car-card" *ngFor="let car of filteredCars" (click)="viewCarDetails(car)">
+
+        <div class="car-image" [style.background-image]="'url(' + getCarImage(car) + ')'">
+          <div class="image-overlay">
+            <span class="material-symbols-outlined">visibility</span>
+          </div>
+          <!-- Owner Badge -->
+          <div class="owner-badge">
+            <div class="owner-avatar">{{ ownerInitials$(car) | async }}</div>
+            <span class="owner-name">{{ ownerName$(car) | async }}</span>
+          </div>
+        </div>
+
+        <div class="car-content">
+          <h3 class="car-name">{{ car.name }}</h3>
+          <p class="car-subtitle">{{ car.make }} {{ car.model }}</p>
+
+          <div class="car-stats">
+            <div class="stat-item">
+              <span class="material-symbols-outlined">speed</span>
+              <span>{{ car.horsepowerPs }} PS</span>
+            </div>
+            <div class="stat-item">
+              <span class="material-symbols-outlined">local_gas_station</span>
+              <span>{{ getFuelLabel(car.fuel) }}</span>
+            </div>
+            <div class="stat-item" *ngIf="car.modelYear">
+              <span class="material-symbols-outlined">calendar_today</span>
+              <span>{{ car.modelYear }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="material-symbols-outlined">straighten</span>
+              <span>{{ formatMileage(car.mileageKm) }}</span>
+            </div>
+          </div>
+
+          <div class="car-badges">
+            <span class="badge" *ngIf="car.transmission">
+              {{ getTransmissionLabel(car.transmission) }}
+            </span>
+            <span class="badge" *ngIf="car.drivetrain">
+              {{ getDrivetrainLabel(car.drivetrain) }}
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Filter Modal -->
+<div class="modal-overlay" *ngIf="showFilters" (click)="toggleFilters()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>Filter & Sortierung</h2>
+      <button class="modal-close" (click)="toggleFilters()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <div class="filter-form">
+
+        <!-- Search -->
+        <div class="filter-group">
+          <label>Suche</label>
+          <div class="search-input">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" [(ngModel)]="filters.search" (ngModelChange)="applyFilters()"
+                   placeholder="Name, Marke, Modell...">
+            <button class="clear-btn" *ngIf="filters.search" (click)="filters.search = ''; applyFilters()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Filters -->
+        <div class="filter-group">
+          <label>Kraftstoff</label>
+          <div class="filter-chips">
+            <button class="chip" [class.active]="filters.fuel === 'all'"
+                    (click)="filters.fuel = 'all'; applyFilters()">
+              Alle
+            </button>
+            <button class="chip" [class.active]="filters.fuel === FuelType.PETROL"
+                    (click)="filters.fuel = FuelType.PETROL; applyFilters()">
+              Benzin
+            </button>
+            <button class="chip" [class.active]="filters.fuel === FuelType.DIESEL"
+                    (click)="filters.fuel = FuelType.DIESEL; applyFilters()">
+              Diesel
+            </button>
+            <button class="chip" [class.active]="filters.fuel === FuelType.ELECTRIC"
+                    (click)="filters.fuel = FuelType.ELECTRIC; applyFilters()">
+              Elektro
+            </button>
+            <button class="chip" [class.active]="filters.fuel === FuelType.HYBRID"
+                    (click)="filters.fuel = FuelType.HYBRID; applyFilters()">
+              Hybrid
+            </button>
+          </div>
+        </div>
+
+        <!-- Transmission -->
+        <div class="filter-group">
+          <label>Getriebe</label>
+          <select [(ngModel)]="filters.transmission" (ngModelChange)="applyFilters()" class="filter-select">
+            <option value="all">Alle</option>
+            <option [value]="Transmission.MANUAL">Manuell</option>
+            <option [value]="Transmission.AUTOMATIC">Automatik</option>
+            <option [value]="Transmission.DSG">DSG</option>
+            <option [value]="Transmission.CVT">CVT</option>
+          </select>
+        </div>
+
+        <!-- Drivetrain -->
+        <div class="filter-group">
+          <label>Antrieb</label>
+          <select [(ngModel)]="filters.drivetrain" (ngModelChange)="applyFilters()" class="filter-select">
+            <option value="all">Alle</option>
+            <option [value]="Drivetrain.FWD">Frontantrieb</option>
+            <option [value]="Drivetrain.RWD">Heckantrieb</option>
+            <option [value]="Drivetrain.AWD">Allrad</option>
+          </select>
+        </div>
+
+        <!-- Body Type -->
+        <div class="filter-group">
+          <label>Karosserie</label>
+          <select [(ngModel)]="filters.bodyType" (ngModelChange)="applyFilters()" class="filter-select">
+            <option value="all">Alle</option>
+            <option [value]="BodyType.SEDAN">Limousine</option>
+            <option [value]="BodyType.HATCHBACK">Schrägheck</option>
+            <option [value]="BodyType.WAGON">Kombi</option>
+            <option [value]="BodyType.COUPE">Coupé</option>
+            <option [value]="BodyType.CONVERTIBLE">Cabrio</option>
+            <option [value]="BodyType.SUV">SUV</option>
+          </select>
+        </div>
+
+        <!-- Power Range -->
+        <div class="filter-group">
+          <label>Leistung: {{ filters.minPower }} - {{ filters.maxPower }} PS</label>
+          <div class="range-inputs">
+            <input type="number" [(ngModel)]="filters.minPower" (ngModelChange)="applyFilters()"
+                   placeholder="Min" class="range-input">
+            <span>-</span>
+            <input type="number" [(ngModel)]="filters.maxPower" (ngModelChange)="applyFilters()"
+                   placeholder="Max" class="range-input">
+          </div>
+        </div>
+
+        <!-- Sort -->
+        <div class="filter-group">
+          <label>Sortierung</label>
+          <div class="sort-controls">
+            <select [(ngModel)]="filters.sortBy" (ngModelChange)="applyFilters()" class="filter-select">
+              <option value="name">Name</option>
+              <option value="power">Leistung</option>
+              <option value="year">Baujahr</option>
+              <option value="mileage">Kilometerstand</option>
+            </select>
+            <button class="btn-sort-order"
+                    (click)="filters.sortOrder = filters.sortOrder === 'asc' ? 'desc' : 'asc'; applyFilters()">
+              <span class="material-symbols-outlined">
+                {{ filters.sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn btn--ghost" (click)="resetFilters()" *ngIf="hasActiveFilters()">
+        <span class="material-symbols-outlined">restart_alt</span>
+        Zurücksetzen
+      </button>
+      <button class="btn btn--primary" (click)="toggleFilters()">
+        <span class="material-symbols-outlined">check</span>
+        {{ filteredCars.length }} Autos anzeigen
+      </button>
+    </div>
+
+  </div>
+</div>

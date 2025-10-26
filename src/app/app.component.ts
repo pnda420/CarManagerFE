@@ -63,7 +63,7 @@ export class AppComponent implements OnInit {
         const deepest = this.getDeepest(this.route);
         const routeTitle: any = deepest.snapshot.routeConfig && (deepest.snapshot.routeConfig as any).title;
         const description = deepest.snapshot.data && deepest.snapshot.data['description'];
-        const title = typeof routeTitle === 'string' ? routeTitle : 'LeonardsMedia';
+        const title = typeof routeTitle === 'string' ? routeTitle : 'pndaCM';
         const url = this.doc.location.href;
 
         this.seo.update({ title, description, url });

@@ -3,42 +3,32 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PageTitleComponent } from '../../shared/page-title/page-title.component';
-import { Car, FuelType, Drivetrain, Transmission, BodyType, Induction, CreateCarDto, UpdateCarDto, CarImage } from '../../api/api.models';
+import { CarFormModalComponent } from '../car-form-modal/car-form-modal.component';
+import { Car, FuelType, Drivetrain, Transmission } from '../../api/api.models';
 import { ApiService } from '../../api/api.service';
 import { ToastService } from '../../shared/toasts/toast.service';
-import { FormsModule } from '@angular/forms';
+import { ConfirmationService } from '../../shared/confirmation/confirmation.service';
 
 @Component({
   selector: 'app-car-overview',
   standalone: true,
-  imports: [CommonModule, PageTitleComponent, FormsModule],
+  imports: [CommonModule, PageTitleComponent, CarFormModalComponent],
   templateUrl: './car-overview.component.html',
   styleUrl: './car-overview.component.scss'
 })
 export class CarOverviewComponent implements OnInit {
   cars: Car[] = [];
   loading = false;
-  showCreateModal = false;
-  showEditModal = false;
-  currentCar: Car | null = null;
 
-  // Enums für Template
-  FuelType = FuelType;
-  Drivetrain = Drivetrain;
-  Transmission = Transmission;
-  BodyType = BodyType;
-  Induction = Induction;
-
-  // Form Data
-  carForm: Partial<CreateCarDto | UpdateCarDto> = {};
-  selectedImages: File[] = [];
-  imagePreviewUrls: string[] = [];
-  uploadedImages: CarImage[] = [];
+  // Modal State
+  showModal = false;
+  selectedCar: Car | null = null;
 
   constructor(
     private api: ApiService,
     private router: Router,
-    private toasts: ToastService
+    private toasts: ToastService,
+    private confirmationService: ConfirmationService
   ) { }
 
   ngOnInit(): void {
@@ -61,175 +51,35 @@ export class CarOverviewComponent implements OnInit {
   }
 
   openCreateModal(): void {
-    this.resetForm();
-    this.showCreateModal = true;
+    this.selectedCar = null;
+    this.showModal = true;
   }
 
   openEditModal(car: Car): void {
-    this.currentCar = car;
-    this.carForm = { ...car };
-
-    // Bilder vom existierenden Car laden
-    this.uploadedImages = car.images ? [...car.images] : [];
-    this.imagePreviewUrls = car.images ? car.images.map(img => img.image) : [];
-
-    this.showEditModal = true;
+    this.selectedCar = car;
+    this.showModal = true;
   }
 
   closeModal(): void {
-    this.showCreateModal = false;
-    this.showEditModal = false;
-    this.resetForm();
+    this.showModal = false;
+    this.selectedCar = null;
   }
 
-  resetForm(): void {
-    this.carForm = {
-      fuel: FuelType.PETROL,
-      mileageKm: 0,
-      horsepowerPs: 100
-    };
-    this.selectedImages = [];
-    this.imagePreviewUrls = [];
-    this.uploadedImages = [];
-    this.currentCar = null;
+  onCarSaved(car: Car): void {
+    this.loadCars();
   }
 
-  // Image Handling
-  onImageSelect(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const files = Array.from(input.files);
-
-      files.forEach(file => {
-        if (file.type.startsWith('image/')) {
-          this.compressImage(file);
-        }
-      });
-    }
-  }
-
-  compressImage(file: File): void {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 1200;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
-                lastModified: Date.now()
-              });
-              this.selectedImages.push(compressedFile);
-
-              // Preview URL erstellen
-              const previewUrl = canvas.toDataURL('image/jpeg', 0.8);
-              this.imagePreviewUrls.push(previewUrl);
-
-              // Als Base64 für Upload vorbereiten
-              this.uploadedImages.push({
-                id: this.generateId(),
-                image: previewUrl
-              });
-            }
-          },
-          'image/jpeg',
-          0.8
-        );
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-removeImage(index: number): void {
-  this.selectedImages.splice(index, 1);
-  this.imagePreviewUrls.splice(index, 1);
-  this.uploadedImages.splice(index, 1);
-}
-
-  generateId(): string {
-    return Math.random().toString(36).substring(2, 15);
-  }
-
-  // CRUD Operations
-  createCar(): void {
-    if (!this.validateForm()) {
-      this.toasts.error('Bitte fülle alle Pflichtfelder aus');
-      return;
-    }
-
-    const dto: CreateCarDto = {
-      ...this.carForm as CreateCarDto,
-      images: this.uploadedImages
-    };
-
-    this.loading = true;
-    this.api.createCar(dto).subscribe({
-      next: (car) => {
-        this.toasts.success('Auto erfolgreich erstellt');
-        this.closeModal();
-        this.loadCars();
-      },
-      error: (err) => {
-        console.error('Error creating car:', err);
-        this.toasts.error('Fehler beim Erstellen des Autos');
-        this.loading = false;
-      }
+  async deleteCar(car: Car): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Auto löschen',
+      message: `Möchtest du das Auto "${car.name}" wirklich löschen?`,
+      confirmText: 'Ja, löschen',
+      cancelText: 'Abbrechen',
+      type: 'danger',
+      icon: 'delete'
     });
-  }
 
-  updateCar(): void {
-    if (!this.currentCar || !this.validateForm()) {
-      this.toasts.error('Bitte fülle alle Pflichtfelder aus');
-      return;
-    }
-
-    const dto: UpdateCarDto = {
-      ...this.carForm,
-      images: this.uploadedImages
-    };
-
-    this.loading = true;
-    this.api.updateCar(this.currentCar.id, dto).subscribe({
-      next: (car) => {
-        this.toasts.success('Auto erfolgreich aktualisiert');
-        this.closeModal();
-        this.loadCars();
-      },
-      error: (err) => {
-        console.error('Error updating car:', err);
-        this.toasts.error('Fehler beim Aktualisieren des Autos');
-        this.loading = false;
-      }
-    });
-  }
-
-  deleteCar(car: Car): void {
-    if (confirm(`Auto "${car.name}" wirklich löschen?`)) {
+    if (confirmed) {
       this.loading = true;
       this.api.deleteCar(car.id).subscribe({
         next: () => {
@@ -246,21 +96,12 @@ removeImage(index: number): void {
   }
 
   viewCarDetails(car: Car): void {
-    this.router.navigate(['/cars', car.id]);
+    this.router.navigate(['/vehicles', car.id], { 
+      state: { returnUrl: this.router.url }
+    });
   }
 
   // Helper Functions
-  validateForm(): boolean {
-    return !!(
-      this.carForm.name &&
-      this.carForm.make &&
-      this.carForm.model &&
-      this.carForm.horsepowerPs &&
-      this.carForm.fuel &&
-      this.carForm.mileageKm !== undefined
-    );
-  }
-
   getCarMainImage(car: Car): string {
     if (car.images && car.images.length > 0) {
       return car.images[0].image;
@@ -270,15 +111,6 @@ removeImage(index: number): void {
 
   formatMileage(km: number): string {
     return new Intl.NumberFormat('de-DE').format(km) + ' km';
-  }
-
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('de-DE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
   }
 
   getFuelLabel(fuel: FuelType): string {
@@ -314,22 +146,6 @@ removeImage(index: number): void {
       [Drivetrain.AWD]: 'Allrad'
     };
     return labels[drivetrain] || drivetrain;
-  }
-
-  getBodyTypeLabel(bodyType?: BodyType): string {
-    if (!bodyType) return '-';
-    const labels: Record<BodyType, string> = {
-      [BodyType.SEDAN]: 'Limousine',
-      [BodyType.WAGON]: 'Kombi',
-      [BodyType.COUPE]: 'Coupé',
-      [BodyType.CONVERTIBLE]: 'Cabrio',
-      [BodyType.SUV]: 'SUV',
-      [BodyType.VAN]: 'Van',
-      [BodyType.PICKUP]: 'Pickup',
-      [BodyType.HATCHBACK]: 'Schrägheck',
-      [BodyType.OTHER]: 'Andere'
-    };
-    return labels[bodyType] || bodyType;
   }
 
   getFuelIcon(fuel: FuelType): string {
