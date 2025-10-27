@@ -11,6 +11,7 @@ import { CarOverviewComponent } from './components/car-overview/car-overview.com
 import { CarDetailComponent } from './components/car-detail/car-detail.component';
 import { CarsExplorerComponent } from './components/cars-explorer/cars-explorer.component';
 import { TuningBrowserComponent } from './components/tuning-browser/tuning-browser.component';
+import { BudgetCalculatorComponent } from './components/budget-calculator/budget-calculator.component';
 
 
 const pageMainName = 'pndaCM';
@@ -21,6 +22,7 @@ export const routes: Routes = [
     { path: 'profile', component: ProfileComponent, title: pageMainName + ' | Profil', data: { description: 'Profil von pndaCM.' } },
     { path: 'register', component: RegisterComponent, title: pageMainName + ' | Register', data: { description: 'Register von pndaCM.' } },
 
+    { path: 'budget-calc', component: BudgetCalculatorComponent, title: pageMainName + ' | Budget Rechner', data: { description: 'Budget Rechner von pndaCM.' } },
     { path: 'explorer', component: CarsExplorerComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von pndaCM.' } },
     { path: 'tuning-browser', component: TuningBrowserComponent, title: pageMainName + ' | Tuning Browser', data: { description: 'Tuning Browser von pndaCM.' } },
     { path: 'mygarage', component: CarOverviewComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von pndaCM.' } },

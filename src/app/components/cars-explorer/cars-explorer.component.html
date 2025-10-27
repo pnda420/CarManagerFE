@@ -304,25 +304,6 @@
           </div>
         </div>
 
-        <!-- Sort -->
-        <div class="filter-group">
-          <label>Sortierung</label>
-          <div class="sort-controls">
-            <select [(ngModel)]="filters.sortBy" (ngModelChange)="applyFilters()" class="filter-select">
-              <option value="name">Name</option>
-              <option value="power">Leistung</option>
-              <option value="year">Baujahr</option>
-              <option value="mileage">Kilometerstand</option>
-            </select>
-            <button class="btn-sort-order"
-                    (click)="filters.sortOrder = filters.sortOrder === 'asc' ? 'desc' : 'asc'; applyFilters()">
-              <span class="material-symbols-outlined">
-                {{ filters.sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-              </span>
-            </button>
-          </div>
-        </div>
-
       </div>
     </div>
 

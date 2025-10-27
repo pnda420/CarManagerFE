@@ -1,0 +1,466 @@
+<div class="budget-calculator-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-left">
+        <button class="btn btn--back" routerLink="/mygarage">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span class="btn-text">Zurück</span>
+        </button>
+        <div class="header-title">
+          <h1>Budget Planer</h1>
+          <p>Plane deine Auto-Käufe & Upgrades</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn--secondary btn--icon-only" (click)="exportData()" title="Exportieren">
+          <span class="material-symbols-outlined">download</span>
+        </button>
+        <button class="btn btn--secondary btn--icon-only" (click)="clearAllData()" title="Alles löschen">
+          <span class="material-symbols-outlined">delete_sweep</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Budget Overview -->
+    <div class="budget-overview-card" [class.over-budget]="isOverBudget()">
+      <div class="budget-main">
+        <div class="budget-info">
+          <div class="budget-label">Dein Budget</div>
+          <div class="budget-amount">{{ formatPrice(totalBudget) }}</div>
+          <button class="btn-edit" (click)="openBudgetModal()">
+            <span class="material-symbols-outlined">edit</span>
+            Budget ändern
+          </button>
+        </div>
+        
+        <div class="budget-progress">
+          <div class="progress-bar">
+            <div 
+              class="progress-fill" 
+              [style.width.%]="getBudgetPercentage()"
+              [class.over]="isOverBudget()"
+            ></div>
+          </div>
+          <div class="progress-info">
+            <span class="spent">{{ formatPrice(getGrandTotal()) }}</span>
+            <span class="remaining" [class.negative]="isOverBudget()">
+              {{ isOverBudget() ? '-' : '' }}{{ formatPrice(Math.abs(getRemainingBudget())) }} übrig
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+      <div class="stat-card stat-card--planned">
+        <div class="stat-icon">
+          <span class="material-symbols-outlined">schedule</span>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Geplant</span>
+          <span class="stat-value">{{ formatPrice(getTotalPlanned()) }}</span>
+          <span class="stat-count">{{ getPlannedItemsCount() }} Positionen</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--purchased">
+        <div class="stat-icon">
+          <span class="material-symbols-outlined">check_circle</span>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Gekauft</span>
+          <span class="stat-value">{{ formatPrice(getTotalSpent()) }}</span>
+          <span class="stat-count">{{ getPurchasedItemsCount() }} Positionen</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--cars">
+        <div class="stat-icon">
+          <span class="material-symbols-outlined">directions_car</span>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Autos</span>
+          <span class="stat-value">{{ formatPrice(getTotalByType('car')) }}</span>
+          <span class="stat-count">{{ getCountByType('car') }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card--parts">
+        <div class="stat-icon">
+          <span class="material-symbols-outlined">settings</span>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Teile</span>
+          <span class="stat-value">{{ formatPrice(getTotalByType('part')) }}</span>
+          <span class="stat-count">{{ getCountByType('part') }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <!-- Type Filter -->
+        <select [(ngModel)]="filterType" class="filter-select">
+          <option value="all">Alle Typen</option>
+          <option value="car">Autos</option>
+          <option value="part">Teile</option>
+          <option value="service">Services</option>
+          <option value="other">Sonstiges</option>
+        </select>
+
+        <!-- Priority Filter -->
+        <select [(ngModel)]="filterPriority" class="filter-select">
+          <option value="all">Alle Prioritäten</option>
+          <option value="high">Hoch</option>
+          <option value="medium">Mittel</option>
+          <option value="low">Niedrig</option>
+        </select>
+
+        <!-- Sort -->
+        <select [(ngModel)]="sortBy" class="filter-select">
+          <option value="date">Neueste zuerst</option>
+          <option value="name">Name</option>
+          <option value="price">Preis</option>
+          <option value="priority">Priorität</option>
+        </select>
+
+        <!-- Show Purchased Checkbox -->
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="showPurchased" />
+          <span>Gekaufte anzeigen</span>
+        </label>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- View Toggle -->
+        <div class="view-toggle">
+          <button 
+            class="toggle-btn" 
+            [class.active]="viewMode === 'grid'"
+            (click)="viewMode = 'grid'"
+            title="Grid-Ansicht"
+          >
+            <span class="material-symbols-outlined">grid_view</span>
+          </button>
+          <button 
+            class="toggle-btn" 
+            [class.active]="viewMode === 'list'"
+            (click)="viewMode = 'list'"
+            title="Listen-Ansicht"
+          >
+            <span class="material-symbols-outlined">view_list</span>
+          </button>
+        </div>
+
+        <button class="btn btn--primary" (click)="openNewItemModal()">
+          <span class="material-symbols-outlined">add</span>
+          <span class="btn-text">Position hinzufügen</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="viewMode === 'grid'" class="items-grid">
+      <div *ngFor="let item of getFilteredItems()" class="item-card" [class.purchased]="item.isPurchased">
+        <div class="item-header">
+          <div class="item-type-badge" [attr.data-type]="item.type">
+            <span class="material-symbols-outlined">{{ getTypeIcon(item.type) }}</span>
+            <span>{{ getTypeLabel(item.type) }}</span>
+          </div>
+          <div class="item-priority-badge" [attr.data-priority]="item.priority">
+            {{ getPriorityLabel(item.priority) }}
+          </div>
+        </div>
+
+        <h3 class="item-name">{{ item.name }}</h3>
+
+        <p *ngIf="item.notes" class="item-notes">{{ item.notes }}</p>
+
+        <div class="item-details">
+          <div class="detail-row">
+            <span class="detail-label">Stückpreis:</span>
+            <span class="detail-value">{{ formatPrice(item.price) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="item.quantity > 1">
+            <span class="detail-label">Menge:</span>
+            <span class="detail-value">{{ item.quantity }}x</span>
+          </div>
+          <div class="detail-row total-row">
+            <span class="detail-label">Gesamt:</span>
+            <span class="detail-value total">{{ formatPrice(getItemTotal(item)) }}</span>
+          </div>
+        </div>
+
+        <div class="item-footer">
+          <div class="item-status">
+            <button 
+              class="status-btn" 
+              [class.purchased]="item.isPurchased"
+              (click)="togglePurchased(item)"
+            >
+              <span class="material-symbols-outlined">
+                {{ item.isPurchased ? 'check_circle' : 'radio_button_unchecked' }}
+              </span>
+              {{ item.isPurchased ? 'Gekauft' : 'Nicht gekauft' }}
+            </button>
+          </div>
+
+          <div class="item-actions">
+            <a *ngIf="item.link" [href]="item.link" target="_blank" class="btn-icon-small" title="Link öffnen">
+              <span class="material-symbols-outlined">link</span>
+            </a>
+            <button class="btn-icon-small" (click)="editItem(item)" title="Bearbeiten">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="btn-icon-small" (click)="duplicateItem(item)" title="Duplizieren">
+              <span class="material-symbols-outlined">content_copy</span>
+            </button>
+            <button class="btn-icon-small btn-icon-small--danger" (click)="deleteItem(item)" title="Löschen">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="getFilteredItems().length === 0" class="empty-state">
+        <span class="material-symbols-outlined">inventory_2</span>
+        <p>Noch keine Positionen vorhanden</p>
+        <button class="btn btn--primary" (click)="openNewItemModal()">
+          <span class="material-symbols-outlined">add</span>
+          Erste Position hinzufügen
+        </button>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="viewMode === 'list'" class="items-list">
+      <div class="list-table">
+        <div class="table-header">
+          <div class="col-checkbox"></div>
+          <div class="col-type">Typ</div>
+          <div class="col-name">Name</div>
+          <div class="col-priority">Priorität</div>
+          <div class="col-quantity">Menge</div>
+          <div class="col-price">Preis</div>
+          <div class="col-total">Gesamt</div>
+          <div class="col-actions">Aktionen</div>
+        </div>
+
+        <div class="table-body">
+          <div 
+            *ngFor="let item of getFilteredItems()" 
+            class="table-row" 
+            [class.purchased]="item.isPurchased"
+          >
+            <div class="col-checkbox">
+              <button 
+                class="checkbox-btn" 
+                [class.checked]="item.isPurchased"
+                (click)="togglePurchased(item)"
+              >
+                <span class="material-symbols-outlined">
+                  {{ item.isPurchased ? 'check_box' : 'check_box_outline_blank' }}
+                </span>
+              </button>
+            </div>
+
+            <div class="col-type">
+              <div class="type-badge" [attr.data-type]="item.type">
+                <span class="material-symbols-outlined">{{ getTypeIcon(item.type) }}</span>
+                <span>{{ getTypeLabel(item.type) }}</span>
+              </div>
+            </div>
+
+            <div class="col-name">
+              <div class="name-cell">
+                <strong>{{ item.name }}</strong>
+                <small *ngIf="item.notes">{{ item.notes }}</small>
+              </div>
+            </div>
+
+            <div class="col-priority">
+              <span class="priority-badge" [attr.data-priority]="item.priority">
+                {{ getPriorityLabel(item.priority) }}
+              </span>
+            </div>
+
+            <div class="col-quantity">{{ item.quantity }}x</div>
+            <div class="col-price">{{ formatPrice(item.price) }}</div>
+            <div class="col-total"><strong>{{ formatPrice(getItemTotal(item)) }}</strong></div>
+
+            <div class="col-actions">
+              <a *ngIf="item.link" [href]="item.link" target="_blank" class="btn-icon-small">
+                <span class="material-symbols-outlined">link</span>
+              </a>
+              <button class="btn-icon-small" (click)="editItem(item)">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="btn-icon-small" (click)="duplicateItem(item)">
+                <span class="material-symbols-outlined">content_copy</span>
+              </button>
+              <button class="btn-icon-small btn-icon-small--danger" (click)="deleteItem(item)">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="getFilteredItems().length === 0" class="empty-state">
+        <span class="material-symbols-outlined">inventory_2</span>
+        <p>Keine Positionen gefunden</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Budget Modal -->
+<div *ngIf="showBudgetModal" class="modal-overlay">
+  <div class="modal-content modal-content--small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Budget festlegen</h2>
+      <button class="btn-close" (click)="closeBudgetModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Gesamtbudget (EUR)</label>
+        <input 
+          type="number" 
+          [(ngModel)]="totalBudget" 
+          class="form-input" 
+          placeholder="0.00" 
+          step="100"
+          min="0"
+        />
+        <small class="form-hint">Wie viel möchtest du maximal ausgeben?</small>
+      </div>
+
+      <div class="budget-preview">
+        <div class="preview-row">
+          <span>Geplant:</span>
+          <strong>{{ formatPrice(getGrandTotal()) }}</strong>
+        </div>
+        <div class="preview-row">
+          <span>Verbleibend:</span>
+          <strong [class.negative]="isOverBudget()">
+            {{ formatPrice(getRemainingBudget()) }}
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn--secondary" (click)="closeBudgetModal()">Abbrechen</button>
+      <button class="btn btn--primary" (click)="saveBudget()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- Item Modal -->
+<div *ngIf="showItemModal" class="modal-overlay">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingItem ? 'Position bearbeiten' : 'Neue Position' }}</h2>
+      <button class="btn-close" (click)="closeItemModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Name *</label>
+        <input 
+          type="text" 
+          [(ngModel)]="itemForm.name" 
+          class="form-input" 
+          placeholder="z.B. BMW M3, Turbolader, Ölwechsel..." 
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Typ</label>
+          <select [(ngModel)]="itemForm.type" class="form-select">
+            <option value="car">Auto</option>
+            <option value="part">Teil</option>
+            <option value="service">Service</option>
+            <option value="other">Sonstiges</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Priorität</label>
+          <select [(ngModel)]="itemForm.priority" class="form-select">
+            <option value="high">Hoch</option>
+            <option value="medium">Mittel</option>
+            <option value="low">Niedrig</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Preis (EUR) *</label>
+          <input 
+            type="number" 
+            [(ngModel)]="itemForm.price" 
+            class="form-input" 
+            placeholder="0.00" 
+            step="0.01"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Menge</label>
+          <input 
+            type="number" 
+            [(ngModel)]="itemForm.quantity" 
+            class="form-input" 
+            placeholder="1" 
+            min="1"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Link (optional)</label>
+        <input 
+          type="url" 
+          [(ngModel)]="itemForm.link" 
+          class="form-input" 
+          placeholder="https://..." 
+        />
+        <small class="form-hint">Link zum Shop, Artikel oder Angebot</small>
+      </div>
+
+      <div class="form-group">
+        <label>Notizen (optional)</label>
+        <textarea 
+          [(ngModel)]="itemForm.notes" 
+          class="form-textarea" 
+          rows="3" 
+          placeholder="Zusätzliche Informationen, Spezifikationen..."
+        ></textarea>
+      </div>
+
+      <div class="price-preview">
+        <span>Gesamtpreis:</span>
+        <strong>{{ formatPrice((itemForm.price || 0) * (itemForm.quantity || 1)) }}</strong>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn--secondary">Abbrechen</button>
+      <button class="btn btn--primary" (click)="saveItem()">
+        {{ editingItem ? 'Speichern' : 'Hinzufügen' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,5 @@
-// src/app/features/cars/car-form-modal/car-form-modal.component.ts
+// car-form-modal.component.ts - FIXED VERSION
+
 import { Component, OnInit, Input, Output, EventEmitter, SimpleChanges, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -158,85 +159,130 @@ export class CarFormModalComponent implements OnInit, OnChanges {
     }
   }
 
-  onImageSelect(event: Event): void {
+  // ========== FIXED IMAGE UPLOAD ==========
+  async onImageSelect(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.uploadingImages = true;
-      const files = Array.from(input.files);
-      
-      let processed = 0;
-      files.forEach(file => {
-        if (file.type.startsWith('image/')) {
-          this.compressImage(file, () => {
-            processed++;
-            if (processed === files.length) {
-              this.uploadingImages = false;
-            }
-          });
+    if (!input.files || input.files.length === 0) return;
+
+    this.uploadingImages = true;
+    const files = Array.from(input.files).filter(file => file.type.startsWith('image/'));
+    
+    try {
+      // Warte auf alle Bilder gleichzeitig mit Promise.all
+      const compressedImages = await Promise.all(
+        files.map(file => this.compressImageAsync(file))
+      );
+
+      // Füge alle erfolgreichen Bilder hinzu
+      compressedImages.forEach(result => {
+        if (result) {
+          this.imagePreviewUrls.push(result.previewUrl);
+          this.uploadedImages.push(result.image);
         }
       });
+
+      this.toasts.success(`${compressedImages.length} Bild(er) hochgeladen`);
+    } catch (error) {
+      console.error('Error compressing images:', error);
+      this.toasts.error('Fehler beim Hochladen der Bilder');
+    } finally {
+      this.uploadingImages = false;
+      // Reset input damit gleiche Bilder nochmal gewählt werden können
+      input.value = '';
     }
   }
 
-  compressImage(file: File, callback: () => void): void {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 1200;
-        let width = img.width;
-        let height = img.height;
+  // Promise-basierte Komprimierung
+  private compressImageAsync(file: File): Promise<{ previewUrl: string; image: CarImage } | null> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onerror = () => reject(new Error('Fehler beim Lesen der Datei'));
+      
+      reader.onload = (e: any) => {
+        const img = new Image();
+        
+        img.onerror = () => reject(new Error('Fehler beim Laden des Bildes'));
+        
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 1200;
+            let width = img.width;
+            let height = img.height;
 
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const previewUrl = canvas.toDataURL('image/jpeg', 0.8);
-              this.imagePreviewUrls.push(previewUrl);
-              this.uploadedImages.push({
-                id: this.generateId(),
-                image: previewUrl
-              });
-              callback();
+            // Berechne neue Dimensionen
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
             }
-          },
-          'image/jpeg',
-          0.8
-        );
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            if (!ctx) {
+              reject(new Error('Canvas Context nicht verfügbar'));
+              return;
+            }
+
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Konvertiere zu Base64
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  const previewUrl = canvas.toDataURL('image/jpeg', 0.8);
+                  const image: CarImage = {
+                    id: this.generateId(),
+                    image: previewUrl
+                  };
+                  resolve({ previewUrl, image });
+                } else {
+                  reject(new Error('Blob-Konvertierung fehlgeschlagen'));
+                }
+              },
+              'image/jpeg',
+              0.8
+            );
+          } catch (error) {
+            reject(error);
+          }
+        };
+        
+        img.src = e.target.result;
       };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+      
+      reader.readAsDataURL(file);
+    });
   }
 
   removeImage(index: number): void {
     this.imagePreviewUrls.splice(index, 1);
     this.uploadedImages.splice(index, 1);
+    this.toasts.info('Bild entfernt');
   }
 
   generateId(): string {
-    return Math.random().toString(36).substring(2, 15);
+    return Date.now().toString() + Math.random().toString(36).substring(2, 9);
   }
 
-  onSubmit(): void {
+  // ========== SUBMIT WITH VALIDATION ==========
+  async onSubmit(): Promise<void> {
+    // Prüfe ob Bilder noch hochgeladen werden
+    if (this.uploadingImages) {
+      this.toasts.warning('Bitte warte, bis alle Bilder hochgeladen sind');
+      return;
+    }
+
     if (this.carForm.invalid) {
       this.toasts.error('Bitte fülle alle Pflichtfelder korrekt aus');
       this.markFormGroupTouched(this.carForm);
@@ -312,6 +358,7 @@ export class CarFormModalComponent implements OnInit, OnChanges {
     this.imagePreviewUrls = [];
     this.uploadedImages = [];
     this.loading = false;
+    this.uploadingImages = false;
     this.expandedSections = {
       performance: false,
       body: false,
