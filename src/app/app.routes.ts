@@ -10,6 +10,7 @@ import { AdminUsersComponent } from './components/admin/admin-users/admin-users.
 import { CarOverviewComponent } from './components/car-overview/car-overview.component';
 import { CarDetailComponent } from './components/car-detail/car-detail.component';
 import { CarsExplorerComponent } from './components/cars-explorer/cars-explorer.component';
+import { TuningBrowserComponent } from './components/tuning-browser/tuning-browser.component';
 
 
 const pageMainName = 'pndaCM';
@@ -21,6 +22,7 @@ export const routes: Routes = [
     { path: 'register', component: RegisterComponent, title: pageMainName + ' | Register', data: { description: 'Register von pndaCM.' } },
 
     { path: 'explorer', component: CarsExplorerComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von pndaCM.' } },
+    { path: 'tuning-browser', component: TuningBrowserComponent, title: pageMainName + ' | Tuning Browser', data: { description: 'Tuning Browser von pndaCM.' } },
     { path: 'mygarage', component: CarOverviewComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von pndaCM.' } },
     { path: 'vehicles/:id', component: CarDetailComponent, title: pageMainName + ' | Fahrzeug Details', data: { description: 'Fahrzeug Details von pndaCM.' } },
     { path: 'admin/users', component: AdminUsersComponent, canActivate: [authGuard, adminGuard], title: pageMainName + ' | Admin Users', data: { description: 'Admin Users von pndaCM.' } },

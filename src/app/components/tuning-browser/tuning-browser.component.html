@@ -1,0 +1,366 @@
+<div class="tuning-browser-page">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-left">
+            <button class="btn btn--back" routerLink="/mygarage">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span class="btn-text">Zurück</span>
+            </button>
+            <h1>Tuning Browser</h1>
+            <button *ngIf="car && !showCarSelection" class="btn btn--change-car" (click)="changeCar()">
+                <span class="material-symbols-outlined">swap_horiz</span>
+                <span class="btn-text">Auto wechseln</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>Lade Daten...</p>
+    </div>
+
+    <!-- Car Selection Modal -->
+    <div *ngIf="!loading && showCarSelection" class="car-selection-overlay">
+        <div class="car-selection-modal">
+            <div class="modal-header">
+                <h2>Wähle ein Auto</h2>
+                <p>Für welches Auto möchtest du Tuning-Parts suchen?</p>
+            </div>
+
+            <div class="cars-grid">
+                <div *ngFor="let car of availableCars" class="car-selection-card" (click)="selectCar(car)">
+                    <div class="car-image">
+                        <img [src]="car.images && car.images.length > 0 ? car.images[0].image : 'assets/images/car-placeholder.jpg'"
+                            [alt]="car.name" />
+                    </div>
+                    <div class="car-info">
+                        <h3>{{ car.name }}</h3>
+                        <p class="car-meta">{{ car.make }} {{ car.model }}</p>
+                        <p class="car-stats">{{ car.horsepowerPs }} PS • {{ car.modelYear }}</p>
+                    </div>
+                    <div class="select-icon">
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </div>
+                </div>
+
+                <div *ngIf="availableCars.length === 0" class="empty-state">
+                    <span class="material-symbols-outlined">directions_car_filled</span>
+                    <p>Noch keine Autos vorhanden</p>
+                    <button class="btn btn--primary" routerLink="/mygarage">
+                        <span class="material-symbols-outlined">add</span>
+                        Auto hinzufügen
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div *ngIf="!loading && !showCarSelection && car" class="tuning-content">
+        <!-- Left Sidebar: Groups & Parts -->
+        <div class="sidebar">
+            <!-- Groups Section -->
+            <div class="groups-section">
+                <div class="section-header">
+                    <h2>Tuning Gruppen</h2>
+                    <button class="btn btn--small btn--primary" (click)="toggleNewGroupForm()">
+                        <span class="material-symbols-outlined">add</span>
+                        Neue Gruppe
+                    </button>
+                </div>
+
+                <!-- New Group Form -->
+                <div *ngIf="showNewGroupForm" class="new-group-form">
+                    <input type="text" [(ngModel)]="newGroup.name" placeholder="Gruppenname" class="form-input" />
+                    <input type="number" [(ngModel)]="newGroup.budgetEur" placeholder="Budget (EUR)" class="form-input" />
+                    <div class="form-actions">
+                        <button class="btn btn--primary" (click)="createGroup()">Erstellen</button>
+                        <button class="btn btn--secondary" (click)="toggleNewGroupForm()">Abbrechen</button>
+                    </div>
+                </div>
+
+                <!-- Groups List -->
+                <div class="groups-list">
+                    <div *ngFor="let group of tuningGroups" class="group-item"
+                        [class.active]="selectedGroup?.id === group.id" (click)="selectGroup(group)">
+                        <div class="group-info">
+                            <h3>{{ group.name }}</h3>
+                            <p *ngIf="group.budgetEur" class="group-budget">
+                                Budget: {{ formatPrice(group.budgetEur) }}
+                            </p>
+                        </div>
+                        <button class="btn-icon btn-delete" (click)="deleteGroup(group); $event.stopPropagation()"
+                            title="Gruppe löschen">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
+                    </div>
+
+                    <div *ngIf="tuningGroups.length === 0" class="empty-state-small">
+                        <span class="material-symbols-outlined">folder_off</span>
+                        <p>Noch keine Gruppen</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parts Section -->
+            <div class="parts-section" *ngIf="selectedGroup">
+                <div class="section-header">
+                    <h2>{{ selectedGroup.name }}</h2>
+                    <span class="parts-count">{{ groupParts.length }} Teile</span>
+                </div>
+
+                <!-- Parts List -->
+                <div class="parts-list">
+                    <div *ngFor="let part of groupParts" class="part-item">
+                        <div class="part-header">
+                            <div class="part-status" [class]="'status-' + part.status">
+                                {{ getStatusLabel(part.status) }}
+                            </div>
+                            <button class="btn-icon btn-delete" (click)="deletePart(part)" title="Part löschen">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+
+                        <h3 class="part-title">{{ part.title }}</h3>
+
+                        <p *ngIf="part.description" class="part-description">{{ part.description }}</p>
+
+                        <div class="part-details">
+                            <div *ngIf="part.quantity" class="detail-row">
+                                <span class="label">Menge:</span>
+                                <span class="value">{{ part.quantity }}x</span>
+                            </div>
+
+                            <div *ngIf="part.unitPriceEur" class="detail-row">
+                                <span class="label">Preis/Stk:</span>
+                                <span class="value">{{ formatPrice(part.unitPriceEur) }}</span>
+                            </div>
+
+                            <div *ngIf="part.laborPriceEur" class="detail-row">
+                                <span class="label">Montage:</span>
+                                <span class="value">{{ formatPrice(part.laborPriceEur) }}</span>
+                            </div>
+
+                            <div *ngIf="part.totalPriceEur" class="detail-row total">
+                                <span class="label">Gesamt:</span>
+                                <span class="value">{{ formatPrice(part.totalPriceEur) }}</span>
+                            </div>
+                        </div>
+
+                        <a *ngIf="part.link" [href]="part.link" target="_blank" class="part-link">
+                            <span class="material-symbols-outlined">link</span>
+                            Link öffnen
+                        </a>
+                    </div>
+
+                    <div *ngIf="groupParts.length === 0" class="empty-state-small">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                        <p>Noch keine Teile</p>
+                    </div>
+                </div>
+
+                <!-- Total Summary -->
+                <div *ngIf="groupParts.length > 0" class="parts-summary">
+                    <div class="summary-row">
+                        <span class="label">Teile gesamt:</span>
+                        <span class="value">{{ groupParts.length }}</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span class="label">Gesamtkosten:</span>
+                        <span class="value">{{ formatPrice(calculateTotalPrice()) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content: Browser Links & Quick Add -->
+        <div class="main-content">
+            <!-- Browser Header -->
+            <div class="browser-section">
+                <div class="browser-header">
+                    <div class="header-icon">
+                        <span class="material-symbols-outlined">language</span>
+                    </div>
+                    <div class="header-info">
+                        <h2>Tuning Parts Browser</h2>
+                        <p>Links öffnen sich in neuen Tabs</p>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="quick-links-grid">
+                    <div class="quick-link-card" (click)="openInNewTab('https://www.ebay.de/b/Auto-Tuning-Styling/6030/bn_1865334')">
+                        <div class="link-icon ebay">
+                            <span class="material-symbols-outlined">shopping_bag</span>
+                        </div>
+                        <div class="link-info">
+                            <h3>eBay Motors</h3>
+                            <p>Tuning Parts & Zubehör</p>
+                        </div>
+                        <span class="material-symbols-outlined arrow">open_in_new</span>
+                    </div>
+
+                    <div class="quick-link-card" (click)="openInNewTab('https://www.amazon.de/s?k=auto+tuning')">
+                        <div class="link-icon amazon">
+                            <span class="material-symbols-outlined">store</span>
+                        </div>
+                        <div class="link-info">
+                            <h3>Amazon Automotive</h3>
+                            <p>KFZ-Teile & Zubehör</p>
+                        </div>
+                        <span class="material-symbols-outlined arrow">open_in_new</span>
+                    </div>
+
+                    <div class="quick-link-card" (click)="openInNewTab('https://www.atu.de')">
+                        <div class="link-icon atu">
+                            <span class="material-symbols-outlined">build</span>
+                        </div>
+                        <div class="link-info">
+                            <h3>ATU</h3>
+                            <p>Autopflege & Tuning</p>
+                        </div>
+                        <span class="material-symbols-outlined arrow">open_in_new</span>
+                    </div>
+
+                    <div class="quick-link-card" (click)="openInNewTab('https://www.mobile.de/de/auto-ersatzteile')">
+                        <div class="link-icon mobile">
+                            <span class="material-symbols-outlined">directions_car</span>
+                        </div>
+                        <div class="link-info">
+                            <h3>Mobile.de Teile</h3>
+                            <p>Gebrauchte & Neue Teile</p>
+                        </div>
+                        <span class="material-symbols-outlined arrow">open_in_new</span>
+                    </div>
+
+                    <div class="quick-link-card" (click)="openInNewTab('https://www.fc-moto.de')">
+                        <div class="link-icon fc-moto">
+                            <span class="material-symbols-outlined">two_wheeler</span>
+                        </div>
+                        <div class="link-info">
+                            <h3>FC-Moto</h3>
+                            <p>Performance & Zubehör</p>
+                        </div>
+                        <span class="material-symbols-outlined arrow">open_in_new</span>
+                    </div>
+
+                    <div class="quick-link-card" (click)="openInNewTab('https://www.autodoc.de')">
+                        <div class="link-icon autodoc">
+                            <span class="material-symbols-outlined">settings</span>
+                        </div>
+                        <div class="link-info">
+                            <h3>Autodoc</h3>
+                            <p>Ersatzteile online</p>
+                        </div>
+                        <span class="material-symbols-outlined arrow">open_in_new</span>
+                    </div>
+                </div>
+
+                <!-- Custom Search -->
+                <div class="custom-search">
+                    <h3>
+                        <span class="material-symbols-outlined">search</span>
+                        Eigene Suche
+                    </h3>
+                    <div class="search-bar">
+                        <input 
+                            type="text" 
+                            [(ngModel)]="searchQuery" 
+                            (keyup.enter)="searchWeb()"
+                            placeholder="z.B. Sportauspuff BMW E46..."
+                            class="form-input"
+                        />
+                        <button class="btn btn--primary" (click)="searchWeb()">
+                            <span class="material-symbols-outlined">search</span>
+                            Suchen
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Add Section -->
+            <div class="quick-add-section" *ngIf="selectedGroup">
+                <div class="quick-add-header">
+                    <div class="header-badge">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        Schnell hinzufügen
+                    </div>
+                    <p>Part direkt zu "{{ selectedGroup.name }}" hinzufügen</p>
+                </div>
+
+                <div class="quick-add-form">
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>
+                                <span class="material-symbols-outlined">link</span>
+                                Produkt-Link
+                            </label>
+                            <input 
+                                type="text" 
+                                [(ngModel)]="quickAddUrl" 
+                                placeholder="https://..."
+                                class="form-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">label</span>
+                                Produktname *
+                            </label>
+                            <input 
+                                type="text" 
+                                [(ngModel)]="quickAddTitle" 
+                                placeholder="z.B. Sportauspuff ABC"
+                                class="form-input"
+                            />
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <span class="material-symbols-outlined">euro</span>
+                                Preis (EUR)
+                            </label>
+                            <input 
+                                type="number" 
+                                [(ngModel)]="quickAddPrice" 
+                                placeholder="0.00"
+                                step="0.01"
+                                class="form-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>
+                                <span class="material-symbols-outlined">notes</span>
+                                Notizen (optional)
+                            </label>
+                            <textarea 
+                                [(ngModel)]="quickAddNotes"
+                                placeholder="Zusätzliche Infos..."
+                                class="form-textarea"
+                                rows="2"
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <button class="btn btn--primary btn--large" (click)="quickAddPart()" [disabled]="!quickAddTitle.trim()">
+                        <span class="material-symbols-outlined">add_shopping_cart</span>
+                        Zu "{{ selectedGroup.name }}" hinzufügen
+                    </button>
+                </div>
+            </div>
+
+            <div *ngIf="!selectedGroup" class="no-group-message">
+                <span class="material-symbols-outlined">info</span>
+                <h3>Keine Gruppe ausgewählt</h3>
+                <p>Wähle links eine Gruppe aus, um Parts hinzuzufügen</p>
+            </div>
+        </div>
+    </div>
+</div>
