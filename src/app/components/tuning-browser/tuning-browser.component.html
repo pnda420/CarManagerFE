@@ -1,366 +1,583 @@
 <div class="tuning-browser-page">
-    <!-- Header -->
+  <!-- Header -->
+  <!-- <div class="container">
     <div class="page-header">
-        <div class="header-left">
-            <button class="btn btn--back" routerLink="/mygarage">
-                <span class="material-symbols-outlined">arrow_back</span>
-                <span class="btn-text">Zurück</span>
+      <button class="btn btn--back" routerLink="/mygarage">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span class="btn-text">Zurück</span>
+      </button>
+    </div>
+  </div> -->
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="container">
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Lade Daten...</p>
+    </div>
+  </div>
+
+  <!-- Car Selection Modal -->
+  <div *ngIf="!loading && showCarSelection" class="car-selection-overlay">
+    <div class="car-selection-modal">
+      <div class="modal-header">
+        <h2>Wähle ein Auto</h2>
+        <p>Für welches Auto möchtest du Tuning-Parts planen?</p>
+      </div>
+
+      <div class="cars-grid">
+        <div 
+          *ngFor="let car of availableCars" 
+          class="car-selection-card"
+          (click)="selectCar(car)"
+        >
+          <div class="car-image">
+            <img 
+              [src]="car.images && car.images.length > 0 ? car.images[0].image : 'assets/images/car-placeholder.jpg'" 
+              [alt]="car.name"
+            />
+          </div>
+          <div class="car-info">
+            <h3>{{ car.name }}</h3>
+            <p class="car-meta">{{ car.make }} {{ car.model }}</p>
+            <p class="car-stats">{{ car.horsepowerPs }} PS • {{ car.modelYear }}</p>
+          </div>
+          <div class="select-icon">
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </div>
+        </div>
+
+        <div *ngIf="availableCars.length === 0" class="empty-state">
+          <span class="material-symbols-outlined">directions_car_filled</span>
+          <p>Noch keine Autos vorhanden</p>
+          <button class="btn btn--primary" routerLink="/mygarage">
+            <span class="material-symbols-outlined">add</span>
+            Auto hinzufügen
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && !showCarSelection && car" class="container">
+    <!-- Car Header Card -->
+    <div class="car-header-card">
+      <div class="car-header-content">
+        <div class="car-image-preview">
+          <img 
+            [src]="car.images && car.images.length > 0 ? car.images[0].image : 'assets/images/car-placeholder.jpg'" 
+            [alt]="car.name"
+          />
+        </div>
+        
+        <div class="car-info-section">
+          <div class="car-title-row">
+            <div>
+              <h1>{{ car.name }}</h1>
+              <p class="car-subtitle">{{ car.make }} {{ car.model }}</p>
+            </div>
+            <button class="btn btn--secondary btn--icon-only" (click)="changeCar()" title="Auto wechseln">
+              <span class="material-symbols-outlined">swap_horiz</span>
             </button>
-            <h1>Tuning Browser</h1>
-            <button *ngIf="car && !showCarSelection" class="btn btn--change-car" (click)="changeCar()">
-                <span class="material-symbols-outlined">swap_horiz</span>
-                <span class="btn-text">Auto wechseln</span>
+          </div>
+          
+          <div class="car-quick-stats">
+            <span class="quick-stat">
+              <span class="material-symbols-outlined">speed</span>
+              {{ car.horsepowerPs }} PS
+            </span>
+            <span class="quick-stat" *ngIf="car.modelYear">
+              <span class="material-symbols-outlined">calendar_today</span>
+              {{ car.modelYear }}
+            </span>
+            <span class="quick-stat">
+              <span class="material-symbols-outlined">route</span>
+              {{ formatNumber(car.mileageKm) }} km
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget Overview -->
+    <div class="budget-overview">
+      <div class="budget-card budget-card--total">
+        <div class="budget-icon">
+          <span class="material-symbols-outlined">account_balance_wallet</span>
+        </div>
+        <div class="budget-content">
+          <span class="budget-label">Gesamt-Budget</span>
+          <span class="budget-value">{{ formatPrice(getTotalBudget()) }}</span>
+        </div>
+      </div>
+      
+      <div class="budget-card budget-card--spent">
+        <div class="budget-icon">
+          <span class="material-symbols-outlined">shopping_cart</span>
+        </div>
+        <div class="budget-content">
+          <span class="budget-label">Ausgegeben</span>
+          <span class="budget-value">{{ formatPrice(getTotalSpent()) }}</span>
+        </div>
+      </div>
+      
+      <div class="budget-card budget-card--remaining">
+        <div class="budget-icon">
+          <span class="material-symbols-outlined">savings</span>
+        </div>
+        <div class="budget-content">
+          <span class="budget-label">Verfügbar</span>
+          <span class="budget-value">{{ formatPrice(getRemainingBudget()) }}</span>
+        </div>
+      </div>
+      
+      <div class="budget-card budget-card--parts">
+        <div class="budget-icon">
+          <span class="material-symbols-outlined">inventory_2</span>
+        </div>
+        <div class="budget-content">
+          <span class="budget-label">Teile gesamt</span>
+          <span class="budget-value">{{ getTotalPartsCount() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Overview -->
+    <div class="status-overview">
+      <div class="status-item status-item--planned" (click)="filterStatus = filterStatus === ModStatus.PLANNED ? null : ModStatus.PLANNED; applyFilters()">
+        <span class="material-symbols-outlined">schedule</span>
+        <div class="status-info">
+          <span class="status-count">{{ getPartsByStatus(ModStatus.PLANNED).length }}</span>
+          <span class="status-label">Geplant</span>
+        </div>
+      </div>
+      
+      <div class="status-item status-item--ordered" (click)="filterStatus = filterStatus === ModStatus.ORDERED ? null : ModStatus.ORDERED; applyFilters()">
+        <span class="material-symbols-outlined">local_shipping</span>
+        <div class="status-info">
+          <span class="status-count">{{ getPartsByStatus(ModStatus.ORDERED).length }}</span>
+          <span class="status-label">Bestellt</span>
+        </div>
+      </div>
+      
+      <div class="status-item status-item--installed" (click)="filterStatus = filterStatus === ModStatus.INSTALLED ? null : ModStatus.INSTALLED; applyFilters()">
+        <span class="material-symbols-outlined">check_circle</span>
+        <div class="status-info">
+          <span class="status-count">{{ getPartsByStatus(ModStatus.INSTALLED).length }}</span>
+          <span class="status-label">Verbaut</span>
+        </div>
+      </div>
+      
+      <div class="status-item status-item--discarded" (click)="filterStatus = filterStatus === ModStatus.DISCARDED ? null : ModStatus.DISCARDED; applyFilters()">
+        <span class="material-symbols-outlined">cancel</span>
+        <div class="status-info">
+          <span class="status-count">{{ getPartsByStatus(ModStatus.DISCARDED).length }}</span>
+          <span class="status-label">Verworfen</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="onSearchChange()"
+            placeholder="Suche nach Teilen..."
+            class="search-input"
+          />
+          <button *ngIf="searchQuery" class="btn-clear" (click)="clearSearch()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        
+        <select [(ngModel)]="sortBy" (ngModelChange)="applySorting()" class="sort-select">
+          <option value="orderIndex">Standard</option>
+          <option value="title">Name</option>
+          <option value="price">Preis</option>
+          <option value="status">Status</option>
+          <option value="createdAt">Datum</option>
+        </select>
+      </div>
+      
+      <div class="toolbar-right">
+
+        <button class="btn btn--primary" (click)="openNewGroupForm()">
+          <span class="material-symbols-outlined">add</span>
+          <span class="btn-text">Neue Gruppe</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Groups View -->
+    <div *ngIf="viewMode === 'groups'" class="groups-view">
+      <div *ngFor="let group of filteredGroups" class="group-section">
+        <div class="group-header">
+          <div class="group-header-left">
+            <h2>{{ group.name }}</h2>
+            <span class="parts-count">{{ getGroupParts(group.id).length }} {{ getGroupParts(group.id).length === 1 ? 'Teil' : 'Teile' }}</span>
+          </div>
+          
+          <div class="group-header-right">
+            <div class="group-budget-info" *ngIf="group.budgetEur">
+              <div class="budget-bar">
+                <div 
+                  class="budget-fill" 
+                  [style.width.%]="getBudgetPercentage(group.id)"
+                  [class.over-budget]="getBudgetPercentage(group.id) > 100"
+                ></div>
+              </div>
+              <div class="budget-text">
+                <span class="spent">{{ formatPrice(getGroupTotalPrice(group.id)) }}</span>
+                <span class="separator">/</span>
+                <span class="total">{{ formatPrice(group.budgetEur) }}</span>
+              </div>
+            </div>
+            
+            <button class="btn-icon" (click)="editGroup(group)" title="Gruppe bearbeiten">
+              <span class="material-symbols-outlined">edit</span>
             </button>
-        </div>
-    </div>
-
-    <!-- Loading State -->
-    <div *ngIf="loading" class="loading-container">
-        <div class="spinner"></div>
-        <p>Lade Daten...</p>
-    </div>
-
-    <!-- Car Selection Modal -->
-    <div *ngIf="!loading && showCarSelection" class="car-selection-overlay">
-        <div class="car-selection-modal">
-            <div class="modal-header">
-                <h2>Wähle ein Auto</h2>
-                <p>Für welches Auto möchtest du Tuning-Parts suchen?</p>
-            </div>
-
-            <div class="cars-grid">
-                <div *ngFor="let car of availableCars" class="car-selection-card" (click)="selectCar(car)">
-                    <div class="car-image">
-                        <img [src]="car.images && car.images.length > 0 ? car.images[0].image : 'assets/images/car-placeholder.jpg'"
-                            [alt]="car.name" />
-                    </div>
-                    <div class="car-info">
-                        <h3>{{ car.name }}</h3>
-                        <p class="car-meta">{{ car.make }} {{ car.model }}</p>
-                        <p class="car-stats">{{ car.horsepowerPs }} PS • {{ car.modelYear }}</p>
-                    </div>
-                    <div class="select-icon">
-                        <span class="material-symbols-outlined">arrow_forward</span>
-                    </div>
-                </div>
-
-                <div *ngIf="availableCars.length === 0" class="empty-state">
-                    <span class="material-symbols-outlined">directions_car_filled</span>
-                    <p>Noch keine Autos vorhanden</p>
-                    <button class="btn btn--primary" routerLink="/mygarage">
-                        <span class="material-symbols-outlined">add</span>
-                        Auto hinzufügen
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div *ngIf="!loading && !showCarSelection && car" class="tuning-content">
-        <!-- Left Sidebar: Groups & Parts -->
-        <div class="sidebar">
-            <!-- Groups Section -->
-            <div class="groups-section">
-                <div class="section-header">
-                    <h2>Tuning Gruppen</h2>
-                    <button class="btn btn--small btn--primary" (click)="toggleNewGroupForm()">
-                        <span class="material-symbols-outlined">add</span>
-                        Neue Gruppe
-                    </button>
-                </div>
-
-                <!-- New Group Form -->
-                <div *ngIf="showNewGroupForm" class="new-group-form">
-                    <input type="text" [(ngModel)]="newGroup.name" placeholder="Gruppenname" class="form-input" />
-                    <input type="number" [(ngModel)]="newGroup.budgetEur" placeholder="Budget (EUR)" class="form-input" />
-                    <div class="form-actions">
-                        <button class="btn btn--primary" (click)="createGroup()">Erstellen</button>
-                        <button class="btn btn--secondary" (click)="toggleNewGroupForm()">Abbrechen</button>
-                    </div>
-                </div>
-
-                <!-- Groups List -->
-                <div class="groups-list">
-                    <div *ngFor="let group of tuningGroups" class="group-item"
-                        [class.active]="selectedGroup?.id === group.id" (click)="selectGroup(group)">
-                        <div class="group-info">
-                            <h3>{{ group.name }}</h3>
-                            <p *ngIf="group.budgetEur" class="group-budget">
-                                Budget: {{ formatPrice(group.budgetEur) }}
-                            </p>
-                        </div>
-                        <button class="btn-icon btn-delete" (click)="deleteGroup(group); $event.stopPropagation()"
-                            title="Gruppe löschen">
-                            <span class="material-symbols-outlined">delete</span>
-                        </button>
-                    </div>
-
-                    <div *ngIf="tuningGroups.length === 0" class="empty-state-small">
-                        <span class="material-symbols-outlined">folder_off</span>
-                        <p>Noch keine Gruppen</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Parts Section -->
-            <div class="parts-section" *ngIf="selectedGroup">
-                <div class="section-header">
-                    <h2>{{ selectedGroup.name }}</h2>
-                    <span class="parts-count">{{ groupParts.length }} Teile</span>
-                </div>
-
-                <!-- Parts List -->
-                <div class="parts-list">
-                    <div *ngFor="let part of groupParts" class="part-item">
-                        <div class="part-header">
-                            <div class="part-status" [class]="'status-' + part.status">
-                                {{ getStatusLabel(part.status) }}
-                            </div>
-                            <button class="btn-icon btn-delete" (click)="deletePart(part)" title="Part löschen">
-                                <span class="material-symbols-outlined">delete</span>
-                            </button>
-                        </div>
-
-                        <h3 class="part-title">{{ part.title }}</h3>
-
-                        <p *ngIf="part.description" class="part-description">{{ part.description }}</p>
-
-                        <div class="part-details">
-                            <div *ngIf="part.quantity" class="detail-row">
-                                <span class="label">Menge:</span>
-                                <span class="value">{{ part.quantity }}x</span>
-                            </div>
-
-                            <div *ngIf="part.unitPriceEur" class="detail-row">
-                                <span class="label">Preis/Stk:</span>
-                                <span class="value">{{ formatPrice(part.unitPriceEur) }}</span>
-                            </div>
-
-                            <div *ngIf="part.laborPriceEur" class="detail-row">
-                                <span class="label">Montage:</span>
-                                <span class="value">{{ formatPrice(part.laborPriceEur) }}</span>
-                            </div>
-
-                            <div *ngIf="part.totalPriceEur" class="detail-row total">
-                                <span class="label">Gesamt:</span>
-                                <span class="value">{{ formatPrice(part.totalPriceEur) }}</span>
-                            </div>
-                        </div>
-
-                        <a *ngIf="part.link" [href]="part.link" target="_blank" class="part-link">
-                            <span class="material-symbols-outlined">link</span>
-                            Link öffnen
-                        </a>
-                    </div>
-
-                    <div *ngIf="groupParts.length === 0" class="empty-state-small">
-                        <span class="material-symbols-outlined">inventory_2</span>
-                        <p>Noch keine Teile</p>
-                    </div>
-                </div>
-
-                <!-- Total Summary -->
-                <div *ngIf="groupParts.length > 0" class="parts-summary">
-                    <div class="summary-row">
-                        <span class="label">Teile gesamt:</span>
-                        <span class="value">{{ groupParts.length }}</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span class="label">Gesamtkosten:</span>
-                        <span class="value">{{ formatPrice(calculateTotalPrice()) }}</span>
-                    </div>
-                </div>
-            </div>
+            <button class="btn-icon" (click)="deleteGroup(group)" title="Gruppe löschen">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+            <button class="btn btn--primary btn--small" (click)="openNewPartForm(group.id)">
+              <span class="material-symbols-outlined">add</span>
+              <span class="btn-text">Teil</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Main Content: Browser Links & Quick Add -->
-        <div class="main-content">
-            <!-- Browser Header -->
-            <div class="browser-section">
-                <div class="browser-header">
-                    <div class="header-icon">
-                        <span class="material-symbols-outlined">language</span>
-                    </div>
-                    <div class="header-info">
-                        <h2>Tuning Parts Browser</h2>
-                        <p>Links öffnen sich in neuen Tabs</p>
-                    </div>
-                </div>
-
-                <!-- Quick Links -->
-                <div class="quick-links-grid">
-                    <div class="quick-link-card" (click)="openInNewTab('https://www.ebay.de/b/Auto-Tuning-Styling/6030/bn_1865334')">
-                        <div class="link-icon ebay">
-                            <span class="material-symbols-outlined">shopping_bag</span>
-                        </div>
-                        <div class="link-info">
-                            <h3>eBay Motors</h3>
-                            <p>Tuning Parts & Zubehör</p>
-                        </div>
-                        <span class="material-symbols-outlined arrow">open_in_new</span>
-                    </div>
-
-                    <div class="quick-link-card" (click)="openInNewTab('https://www.amazon.de/s?k=auto+tuning')">
-                        <div class="link-icon amazon">
-                            <span class="material-symbols-outlined">store</span>
-                        </div>
-                        <div class="link-info">
-                            <h3>Amazon Automotive</h3>
-                            <p>KFZ-Teile & Zubehör</p>
-                        </div>
-                        <span class="material-symbols-outlined arrow">open_in_new</span>
-                    </div>
-
-                    <div class="quick-link-card" (click)="openInNewTab('https://www.atu.de')">
-                        <div class="link-icon atu">
-                            <span class="material-symbols-outlined">build</span>
-                        </div>
-                        <div class="link-info">
-                            <h3>ATU</h3>
-                            <p>Autopflege & Tuning</p>
-                        </div>
-                        <span class="material-symbols-outlined arrow">open_in_new</span>
-                    </div>
-
-                    <div class="quick-link-card" (click)="openInNewTab('https://www.mobile.de/de/auto-ersatzteile')">
-                        <div class="link-icon mobile">
-                            <span class="material-symbols-outlined">directions_car</span>
-                        </div>
-                        <div class="link-info">
-                            <h3>Mobile.de Teile</h3>
-                            <p>Gebrauchte & Neue Teile</p>
-                        </div>
-                        <span class="material-symbols-outlined arrow">open_in_new</span>
-                    </div>
-
-                    <div class="quick-link-card" (click)="openInNewTab('https://www.fc-moto.de')">
-                        <div class="link-icon fc-moto">
-                            <span class="material-symbols-outlined">two_wheeler</span>
-                        </div>
-                        <div class="link-info">
-                            <h3>FC-Moto</h3>
-                            <p>Performance & Zubehör</p>
-                        </div>
-                        <span class="material-symbols-outlined arrow">open_in_new</span>
-                    </div>
-
-                    <div class="quick-link-card" (click)="openInNewTab('https://www.autodoc.de')">
-                        <div class="link-icon autodoc">
-                            <span class="material-symbols-outlined">settings</span>
-                        </div>
-                        <div class="link-info">
-                            <h3>Autodoc</h3>
-                            <p>Ersatzteile online</p>
-                        </div>
-                        <span class="material-symbols-outlined arrow">open_in_new</span>
-                    </div>
-                </div>
-
-                <!-- Custom Search -->
-                <div class="custom-search">
-                    <h3>
-                        <span class="material-symbols-outlined">search</span>
-                        Eigene Suche
-                    </h3>
-                    <div class="search-bar">
-                        <input 
-                            type="text" 
-                            [(ngModel)]="searchQuery" 
-                            (keyup.enter)="searchWeb()"
-                            placeholder="z.B. Sportauspuff BMW E46..."
-                            class="form-input"
-                        />
-                        <button class="btn btn--primary" (click)="searchWeb()">
-                            <span class="material-symbols-outlined">search</span>
-                            Suchen
-                        </button>
-                    </div>
-                </div>
+        <div class="parts-grid">
+          <div *ngFor="let part of getGroupParts(group.id)" class="part-card" [class]="'status-' + part.status">
+            <div class="part-card-header">
+              <div class="part-status-badge" [class]="'status-' + part.status">
+                {{ getStatusLabel(part.status) }}
+              </div>
+              <div class="part-actions">
+                <button class="btn-icon-small" (click)="cyclePartStatus(part)" title="Status ändern">
+                  <span class="material-symbols-outlined">fast_forward</span>
+                </button>
+                <button class="btn-icon-small" (click)="editPart(part)" title="Bearbeiten">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button class="btn-icon-small" (click)="duplicatePart(part)" title="Duplizieren">
+                  <span class="material-symbols-outlined">content_copy</span>
+                </button>
+                <button class="btn-icon-small btn-icon-small--danger" (click)="deletePart(part)" title="Löschen">
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
             </div>
 
-            <!-- Quick Add Section -->
-            <div class="quick-add-section" *ngIf="selectedGroup">
-                <div class="quick-add-header">
-                    <div class="header-badge">
-                        <span class="material-symbols-outlined">add_circle</span>
-                        Schnell hinzufügen
-                    </div>
-                    <p>Part direkt zu "{{ selectedGroup.name }}" hinzufügen</p>
-                </div>
+            <h3 class="part-title">{{ part.title }}</h3>
+            
+            <p *ngIf="part.description" class="part-description">
+              {{ part.description }}
+            </p>
 
-                <div class="quick-add-form">
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label>
-                                <span class="material-symbols-outlined">link</span>
-                                Produkt-Link
-                            </label>
-                            <input 
-                                type="text" 
-                                [(ngModel)]="quickAddUrl" 
-                                placeholder="https://..."
-                                class="form-input"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>
-                                <span class="material-symbols-outlined">label</span>
-                                Produktname *
-                            </label>
-                            <input 
-                                type="text" 
-                                [(ngModel)]="quickAddTitle" 
-                                placeholder="z.B. Sportauspuff ABC"
-                                class="form-input"
-                            />
-                        </div>
-
-                        <div class="form-group">
-                            <label>
-                                <span class="material-symbols-outlined">euro</span>
-                                Preis (EUR)
-                            </label>
-                            <input 
-                                type="number" 
-                                [(ngModel)]="quickAddPrice" 
-                                placeholder="0.00"
-                                step="0.01"
-                                class="form-input"
-                            />
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group full-width">
-                            <label>
-                                <span class="material-symbols-outlined">notes</span>
-                                Notizen (optional)
-                            </label>
-                            <textarea 
-                                [(ngModel)]="quickAddNotes"
-                                placeholder="Zusätzliche Infos..."
-                                class="form-textarea"
-                                rows="2"
-                            ></textarea>
-                        </div>
-                    </div>
-
-                    <button class="btn btn--primary btn--large" (click)="quickAddPart()" [disabled]="!quickAddTitle.trim()">
-                        <span class="material-symbols-outlined">add_shopping_cart</span>
-                        Zu "{{ selectedGroup.name }}" hinzufügen
-                    </button>
-                </div>
+            <div class="part-details" *ngIf="part.quantity || part.unitPriceEur || part.laborPriceEur">
+              <div *ngIf="part.quantity && part.quantity > 1" class="detail-item">
+                <span class="material-symbols-outlined">counter_1</span>
+                <span>{{ part.quantity }}x</span>
+              </div>
+              
+              <div *ngIf="part.unitPriceEur" class="detail-item">
+                <span class="material-symbols-outlined">sell</span>
+                <span>{{ formatPrice(part.unitPriceEur) }}</span>
+              </div>
+              
+              <div *ngIf="part.laborPriceEur" class="detail-item">
+                <span class="material-symbols-outlined">build</span>
+                <span>{{ formatPrice(part.laborPriceEur) }}</span>
+              </div>
             </div>
 
-            <div *ngIf="!selectedGroup" class="no-group-message">
-                <span class="material-symbols-outlined">info</span>
-                <h3>Keine Gruppe ausgewählt</h3>
-                <p>Wähle links eine Gruppe aus, um Parts hinzuzufügen</p>
+            <div class="part-footer">
+              <div class="part-total">
+                <span class="total-label">Gesamt</span>
+                <span class="total-value">{{ formatPrice(getPartTotalPrice(part)) }}</span>
+              </div>
+              
+              <a *ngIf="part.link" [href]="part.link" target="_blank" class="part-link" (click)="$event.stopPropagation()">
+                <span class="material-symbols-outlined">link</span>
+              </a>
             </div>
+          </div>
+
+          <button *ngIf="getGroupParts(group.id).length === 0" class="empty-group-btn" (click)="openNewPartForm(group.id)">
+            <span class="material-symbols-outlined">add_circle</span>
+            <span>Erstes Teil hinzufügen</span>
+          </button>
         </div>
+      </div>
+
+      <div *ngIf="filteredGroups.length === 0" class="empty-state">
+        <span class="material-symbols-outlined">folder_off</span>
+        <p>{{ searchQuery ? 'Keine Gruppen gefunden' : 'Noch keine Gruppen vorhanden' }}</p>
+        <button *ngIf="!searchQuery" class="btn btn--primary" (click)="openNewGroupForm()">
+          <span class="material-symbols-outlined">add</span>
+          Erste Gruppe erstellen
+        </button>
+      </div>
     </div>
+
+    <!-- List View -->
+    <div *ngIf="viewMode === 'list'" class="list-view">
+      <div class="list-table">
+        <div class="table-header">
+          <div class="col-status">Status</div>
+          <div class="col-title">Teil</div>
+          <div class="col-group">Gruppe</div>
+          <div class="col-quantity">Menge</div>
+          <div class="col-price">Stückpreis</div>
+          <div class="col-labor">Montage</div>
+          <div class="col-total">Gesamt</div>
+          <div class="col-actions">Aktionen</div>
+        </div>
+
+        <div class="table-body">
+          <div *ngFor="let part of getAllFilteredParts()" class="table-row" [class]="'status-' + part.status">
+            <div class="col-status">
+              <div class="status-badge" [class]="'status-' + part.status">
+                {{ getStatusLabel(part.status) }}
+              </div>
+            </div>
+            
+            <div class="col-title">
+              <div class="title-cell">
+                <strong>{{ part.title }}</strong>
+                <small *ngIf="part.description">{{ part.description }}</small>
+                <a *ngIf="part.link" [href]="part.link" target="_blank" class="inline-link">
+                  <span class="material-symbols-outlined">link</span>
+                </a>
+              </div>
+            </div>
+            
+            <div class="col-group">
+              {{ getGroupName(part.groupId) }}
+            </div>
+            
+            <div class="col-quantity">
+              {{ part.quantity || 1 }}x
+            </div>
+            
+            <div class="col-price">
+              {{ part.unitPriceEur ? formatPrice(part.unitPriceEur) : '-' }}
+            </div>
+            
+            <div class="col-labor">
+              {{ part.laborPriceEur ? formatPrice(part.laborPriceEur) : '-' }}
+            </div>
+            
+            <div class="col-total">
+              <strong>{{ formatPrice((part.totalPriceEur || 0) + (part.laborPriceEur || 0)) }}</strong>
+            </div>
+            
+            <div class="col-actions">
+              <button class="btn-icon-small" (click)="cyclePartStatus(part)" title="Status ändern">
+                <span class="material-symbols-outlined">fast_forward</span>
+              </button>
+              <button class="btn-icon-small" (click)="editPart(part)" title="Bearbeiten">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button class="btn-icon-small" (click)="duplicatePart(part)" title="Duplizieren">
+                <span class="material-symbols-outlined">content_copy</span>
+              </button>
+              <button class="btn-icon-small" (click)="deletePart(part)" title="Löschen">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="getAllFilteredParts().length === 0" class="empty-state">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <p>Keine Teile gefunden</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kanban Board View -->
+    <div *ngIf="viewMode === 'board'" class="board-view">
+      <div class="board-columns">
+        <div class="board-column" *ngFor="let status of statuses">
+          <div class="column-header">
+            <h3>{{ getStatusLabel(status) }}</h3>
+            <span class="column-count">{{ getPartsByStatus(status).length }}</span>
+          </div>
+
+          <div class="column-content">
+            <div 
+              *ngFor="let part of getPartsByStatus(status)" 
+              class="board-card"
+              [class]="'status-' + status"
+            >
+              <div class="board-card-header">
+                <span class="group-tag">{{ getGroupName(part.groupId) }}</span>
+                <div class="card-actions">
+                  <button class="btn-icon-small" (click)="editPart(part)">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button class="btn-icon-small" (click)="deletePart(part)">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </div>
+
+              <h4>{{ part.title }}</h4>
+              
+              <p *ngIf="part.description" class="card-description">
+                {{ part.description }}
+              </p>
+
+              <div class="card-details">
+                <span *ngIf="part.quantity && part.quantity > 1">
+                  <span class="material-symbols-outlined">counter_1</span>
+                  {{ part.quantity }}x
+                </span>
+                <span *ngIf="part.unitPriceEur">
+                  <span class="material-symbols-outlined">sell</span>
+                  {{ formatPrice(part.unitPriceEur) }}
+                </span>
+              </div>
+
+              <div *ngIf="part.totalPriceEur || part.laborPriceEur" class="card-total">
+                {{ formatPrice((part.totalPriceEur || 0) + (part.laborPriceEur || 0)) }}
+              </div>
+
+              <a *ngIf="part.link" [href]="part.link" target="_blank" class="card-link">
+                <span class="material-symbols-outlined">link</span>
+              </a>
+            </div>
+
+            <div *ngIf="getPartsByStatus(status).length === 0" class="column-empty">
+              <span class="material-symbols-outlined">inventory_2</span>
+              <p>Keine Teile</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New/Edit Group Modal -->
+<div *ngIf="showGroupModal" class="modal-overlay">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingGroup ? 'Gruppe bearbeiten' : 'Neue Gruppe' }}</h2>
+      <button class="btn-close" (click)="closeGroupModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Gruppenname *</label>
+        <input type="text" [(ngModel)]="groupForm.name" class="form-input" placeholder="z.B. Motor-Upgrades" />
+      </div>
+
+      <div class="form-group">
+        <label>Budget (EUR)</label>
+        <input type="number" [(ngModel)]="groupForm.budgetEur" class="form-input" placeholder="0.00" step="0.01" />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn--secondary" (click)="closeGroupModal()">Abbrechen</button>
+      <button class="btn btn--primary" (click)="saveGroup()">
+        {{ editingGroup ? 'Speichern' : 'Erstellen' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- New/Edit Part Modal -->
+<div *ngIf="showPartModal" class="modal-overlay">
+  <div class="modal-content modal-content--large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingPart ? 'Teil bearbeiten' : 'Neues Teil' }}</h2>
+      <button class="btn-close" (click)="closePartModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group form-group--full">
+          <label>Titel *</label>
+          <input type="text" [(ngModel)]="partForm.title" class="form-input" placeholder="z.B. K&N Luftfilter" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Beschreibung</label>
+        <textarea [(ngModel)]="partForm.description" class="form-textarea" rows="3" placeholder="Details, Spezifikationen..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Gruppe *</label>
+          <select [(ngModel)]="partForm.groupId" class="form-select">
+            <option *ngFor="let group of tuningGroups" [value]="group.id">
+              {{ group.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select [(ngModel)]="partForm.status" class="form-select">
+            <option [value]="ModStatus.PLANNED">Geplant</option>
+            <option [value]="ModStatus.ORDERED">Bestellt</option>
+            <option [value]="ModStatus.INSTALLED">Verbaut</option>
+            <option [value]="ModStatus.DISCARDED">Verworfen</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Menge</label>
+          <input type="number" [(ngModel)]="partForm.quantity" class="form-input" min="1" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Stückpreis (EUR)</label>
+          <input type="number" [(ngModel)]="partForm.unitPriceEur" class="form-input" step="0.01" placeholder="0.00" />
+        </div>
+
+        <div class="form-group">
+          <label>Gesamtpreis (EUR)</label>
+          <input type="number" [(ngModel)]="partForm.totalPriceEur" class="form-input" step="0.01" placeholder="0.00" />
+        </div>
+
+        <div class="form-group">
+          <label>Montagekosten (EUR)</label>
+          <input type="number" [(ngModel)]="partForm.laborPriceEur" class="form-input" step="0.01" placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Link (Shop, Artikel, etc.)</label>
+        <input type="url" [(ngModel)]="partForm.link" class="form-input" placeholder="https://..." />
+      </div>
+
+      <div class="form-group">
+        <label>Notizen</label>
+        <textarea [(ngModel)]="partForm.notes" class="form-textarea" rows="2" placeholder="Zusätzliche Informationen..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn--secondary" (click)="closePartModal()">Abbrechen</button>
+      <button class="btn btn--primary" (click)="savePart()">
+        {{ editingPart ? 'Speichern' : 'Hinzufügen' }}
+      </button>
+    </div>
+  </div>
 </div>
