@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateUserDto, User, LoginDto, LoginResponse, UpdateUserDto, CreateCarDto, Car, UpdateCarDto, CreateTuningGroupDto, TuningGroup, UpdateTuningGroupDto, CreateTuningPartDto, TuningPart, UpdateTuningPartDto } from './api.models';
+import { CreateUserDto, User, LoginDto, LoginResponse, UpdateUserDto, CreateCarDto, Car, UpdateCarDto, CreateTuningGroupDto, TuningGroup, UpdateTuningGroupDto, CreateTuningPartDto, TuningPart, UpdateTuningPartDto, AlertSettings, UpdateAlertSettingsDto } from './api.models';
 
 
 @Injectable({
@@ -197,6 +197,36 @@ export class ApiService {
   deleteTuningPart(carId: string, partId: string): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/cars/${carId}/tuning/parts/${partId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  
+  getAlertSettings(): Observable<AlertSettings> {
+    return this.http.get<AlertSettings>(`${this.apiUrl}/alert-settings`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  updateAlertSettings(dto: UpdateAlertSettingsDto): Observable<AlertSettings> {
+    return this.http.patch<AlertSettings>(`${this.apiUrl}/alert-settings`, dto, {
+      headers: this.getHeaders()
+    });
+  }
+
+  sendTestAlert(carId: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/alert-settings/test/${carId}`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // Admin only
+  triggerAlertCheck(): Observable<{ message: string; timestamp: string }> {
+    return this.http.post<{ message: string; timestamp: string }>(
+      `${this.apiUrl}/alerts/check`,
+      {},
       { headers: this.getHeaders() }
     );
   }

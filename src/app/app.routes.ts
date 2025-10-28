@@ -14,18 +14,18 @@ import { TuningBrowserComponent } from './components/tuning-browser/tuning-brows
 import { BudgetCalculatorComponent } from './components/budget-calculator/budget-calculator.component';
 
 
-const pageMainName = 'pndaCM';
+const pageMainName = 'LeonardsMedia';
 export const routes: Routes = [
-    { path: '', component: HomeComponent, title: pageMainName, data: { description: 'IT-Dienstleistungen, Webentwicklung und SEO – pragmatisch, transparent und zuverlässig. pndaCM hilft Ihnen bei Konzeption, Entwicklung und Betrieb.' } },
-    { path: 'imprint', component: ImprintComponent, title: pageMainName + ' | Impressum', data: { description: 'Impressum von pndaCM.' } },
-    { path: 'login', component: LoginComponent, title: pageMainName + ' | Login', data: { description: 'Login von pndaCM.' } },
-    { path: 'profile', component: ProfileComponent, title: pageMainName + ' | Profil', data: { description: 'Profil von pndaCM.' } },
-    { path: 'register', component: RegisterComponent, title: pageMainName + ' | Register', data: { description: 'Register von pndaCM.' } },
+    { path: '', component: HomeComponent, title: pageMainName, data: { description: 'IT-Dienstleistungen, Webentwicklung und SEO – pragmatisch, transparent und zuverlässig. LeonardsMedia hilft Ihnen bei Konzeption, Entwicklung und Betrieb.' } },
+    { path: 'imprint', component: ImprintComponent, title: pageMainName + ' | Impressum', data: { description: 'Impressum von LeonardsMedia.' } },
+    { path: 'login', component: LoginComponent, title: pageMainName + ' | Login', data: { description: 'Login von LeonardsMedia.' } },
+    { path: 'profile', component: ProfileComponent, title: pageMainName + ' | Profil', data: { description: 'Profil von LeonardsMedia.' } },
+    { path: 'register', component: RegisterComponent, title: pageMainName + ' | Register', data: { description: 'Register von LeonardsMedia.' } },
 
-    { path: 'budget-calc', component: BudgetCalculatorComponent, title: pageMainName + ' | Budget Rechner', data: { description: 'Budget Rechner von pndaCM.' } },
-    { path: 'explorer', component: CarsExplorerComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von pndaCM.' } },
-    { path: 'tuning-browser', component: TuningBrowserComponent, title: pageMainName + ' | Tuning Browser', data: { description: 'Tuning Browser von pndaCM.' } },
-    { path: 'mygarage', component: CarOverviewComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von pndaCM.' } },
-    { path: 'vehicles/:id', component: CarDetailComponent, title: pageMainName + ' | Fahrzeug Details', data: { description: 'Fahrzeug Details von pndaCM.' } },
-    { path: 'admin/users', component: AdminUsersComponent, canActivate: [authGuard, adminGuard], title: pageMainName + ' | Admin Users', data: { description: 'Admin Users von pndaCM.' } },
+    { path: 'budget-calc', component: BudgetCalculatorComponent, title: pageMainName + ' | Budget Rechner', data: { description: 'Budget Rechner von LeonardsMedia.' } },
+    { path: 'explorer', component: CarsExplorerComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von LeonardsMedia.' } },
+    { path: 'tuning-browser', component: TuningBrowserComponent, title: pageMainName + ' | Tuning Browser', data: { description: 'Tuning Browser von LeonardsMedia.' } },
+    { path: 'mygarage', component: CarOverviewComponent, title: pageMainName + ' | Meine Fahrzeuge', data: { description: 'Meine Fahrzeuge von LeonardsMedia.' } },
+    { path: 'vehicles/:id', component: CarDetailComponent, title: pageMainName + ' | Fahrzeug Details', data: { description: 'Fahrzeug Details von LeonardsMedia.' } },
+    { path: 'admin/users', component: AdminUsersComponent, canActivate: [authGuard, adminGuard], title: pageMainName + ' | Admin Users', data: { description: 'Admin Users von LeonardsMedia.' } },
 ];

@@ -378,8 +378,17 @@ export class BudgetCalculatorComponent implements OnInit {
     return this.items.filter(i => i.isPurchased).length;
   }
 
-  clearAllData(): void {
-    if (confirm('Möchtest du wirklich alle Daten löschen? Dies kann nicht rückgängig gemacht werden!')) {
+  async clearAllData(): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Alle Daten löschen',
+      message: 'Möchtest du wirklich alle Daten löschen? Dies kann nicht rückgängig gemacht werden!',
+      confirmText: 'Ja, löschen',
+      cancelText: 'Abbrechen',
+      type: 'danger',
+      icon: 'delete'
+    });
+
+    if (confirmed) {
       this.totalBudget = 0;
       this.items = [];
       this.saveToLocalStorage();

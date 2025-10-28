@@ -1,3 +1,4 @@
+<!-- src/app/features/cars/cars-explorer/cars-explorer.component.html -->
 <section class="explorer-page">
   <div class="container">
 
@@ -42,7 +43,7 @@
     <!-- Active Filters Display -->
     <div class="active-filters" *ngIf="!loading && hasActiveFilters()">
       <div class="filter-tag" *ngIf="filters.search">
-        <span>Suche: "{{ filters.search }}"</span>
+        <span>{{ filters.search }}</span>
         <button (click)="filters.search = ''; applyFilters()">
           <span class="material-symbols-outlined">close</span>
         </button>
@@ -80,7 +81,7 @@
     <div class="sorting-bar" *ngIf="!loading && filteredCars.length > 0">
       <div class="sorting-label">
         <span class="material-symbols-outlined">sort</span>
-        <span>Sortierung:</span>
+        <span>Sort:</span>
       </div>
       <div class="sorting-options">
         <button class="sort-btn" 

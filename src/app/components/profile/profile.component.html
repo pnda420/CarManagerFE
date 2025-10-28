@@ -1,3 +1,4 @@
+<!-- src/app/pages/profile/profile.component.html (KOMPAKT) -->
 <app-page-title title="Mein Profil"></app-page-title>
 
 <section class="profile-page">
@@ -6,69 +7,254 @@
         <!-- Profile Card -->
         <div class="profile-card" *ngIf="user">
 
-            <!-- Header Section -->
+            <!-- Header Section - Kompakt -->
             <div class="profile-header">
-                <div class="avatar-wrapper">
-                    <div class="avatar">
-                        {{ user.name.charAt(0).toUpperCase() }}
-                    </div>
-                    <div class="avatar-status"></div>
+                <div class="avatar">
+                    {{ user.name.charAt(0).toUpperCase() }}
                 </div>
                 <div class="profile-info">
                     <h2>{{ user.name }}</h2>
                     <p class="email">{{ user.email }}</p>
                     <span class="role-badge" [ngClass]="getRoleBadgeClass()">
-                        <span class="material-symbols-outlined ms-size-20 ms-fill">{{ getRoleIcon() }}</span>
+                        <span class="material-symbols-outlined ms-size-16">{{ getRoleIcon() }}</span>
                         {{ getRoleLabel() }}
                     </span>
                 </div>
             </div>
 
-            <!-- Stats Grid -->
-            <div class="stats-grid">
+            <!-- Compact Stats -->
+            <div class="stats-row">
                 <div class="stat-item">
-                    <span class="material-symbols-outlined ms-fill">calendar_today</span>
-                    <div class="stat-content">
+                    <span class="material-symbols-outlined">calendar_today</span>
+                    <div>
                         <span class="stat-label">Mitglied seit</span>
                         <span class="stat-value">{{ formatDate(user.createdAt) }}</span>
                     </div>
                 </div>
                 <div class="stat-item">
-                    <span class="material-symbols-outlined ms-fill">shield</span>
-                    <div class="stat-content">
-                        <span class="stat-label">Account-Status</span>
-                        <span class="stat-value">Aktiv</span>
+                    <span class="material-symbols-outlined">directions_car</span>
+                    <div>
+                        <span class="stat-label">Fahrzeuge</span>
+                        <span class="stat-value">{{ userCars.length }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Details Section -->
-            <div class="details-section">
-                <h3>Account-Details</h3>
-                <div class="details-grid">
-                    <div class="detail-item">
-                        <span class="detail-label">Benutzer-ID</span>
-                        <span class="detail-value">{{ user.id }}</span>
+            <!-- Benachrichtigungen - Kompakt -->
+            <div class="settings-section">
+                <h3>
+                    <span class="material-symbols-outlined">notifications</span>
+                    Benachrichtigungseinstellungen
+                </h3>
+
+                <div *ngIf="isLoadingSettings" class="loading-state">
+                    <div class="spinner-small"></div>
+                    <p>Lade Einstellungen...</p>
+                </div>
+
+                <div *ngIf="!isLoadingSettings && alertSettings" class="settings-grid">
+                    
+                    <!-- Master Toggle -->
+                    <div class="setting-row setting-row--primary">
+                        <div class="setting-info">
+                            <span class="material-symbols-outlined">notifications_active</span>
+                            <div>
+                                <label class="setting-label" [for]="'alertsEnabled'">
+                                    Benachrichtigungen aktivieren
+                                </label>
+                                <p class="setting-desc">Alle E-Mail-Benachrichtigungen</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <input 
+                                type="checkbox" 
+                                id="alertsEnabled"
+                                [(ngModel)]="alertSettings.alertsEnabled"
+                                class="toggle-input"
+                            />
+                            <label [for]="'alertsEnabled'" class="toggle-label"></label>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">E-Mail-Adresse</span>
-                        <span class="detail-value">{{ user.email }}</span>
+
+                    <!-- TÜV -->
+                    <div class="setting-row" [class.disabled]="!alertSettings.alertsEnabled">
+                        <div class="setting-info">
+                            <span class="material-symbols-outlined">verified</span>
+                            <div>
+                                <label class="setting-label" [for]="'tuvAlertEnabled'">TÜV-Erinnerungen</label>
+                                <p class="setting-desc">Rechtzeitig an TÜV-Termine erinnern</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <input 
+                                type="checkbox" 
+                                id="tuvAlertEnabled"
+                                [(ngModel)]="alertSettings.tuvAlertEnabled"
+                                [disabled]="!alertSettings.alertsEnabled"
+                                class="toggle-input"
+                            />
+                            <label [for]="'tuvAlertEnabled'" class="toggle-label"></label>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Vollständiger Name</span>
-                        <span class="detail-value">{{ user.name }}</span>
+                    
+                    <div class="setting-detail" *ngIf="alertSettings.tuvAlertEnabled && alertSettings.alertsEnabled">
+                        <label class="input-label">
+                            <span class="material-symbols-outlined">schedule</span>
+                            Vorlaufzeit
+                        </label>
+                        <div class="input-group">
+                            <input 
+                                type="number"
+                                [(ngModel)]="alertSettings.tuvDaysBefore"
+                                min="1"
+                                max="180"
+                                class="input-number"
+                            />
+                            <span class="input-suffix">Tage vorher</span>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Benutzerrolle</span>
-                        <span class="detail-value">{{ getRoleLabel() }}</span>
+
+                    <!-- Service -->
+                    <div class="setting-row" [class.disabled]="!alertSettings.alertsEnabled">
+                        <div class="setting-info">
+                            <span class="material-symbols-outlined">build</span>
+                            <div>
+                                <label class="setting-label" [for]="'serviceAlertEnabled'">Service-Erinnerungen</label>
+                                <p class="setting-desc">An Service-Termine erinnern</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <input 
+                                type="checkbox" 
+                                id="serviceAlertEnabled"
+                                [(ngModel)]="alertSettings.serviceAlertEnabled"
+                                [disabled]="!alertSettings.alertsEnabled"
+                                class="toggle-input"
+                            />
+                            <label [for]="'serviceAlertEnabled'" class="toggle-label"></label>
+                        </div>
                     </div>
+                    
+                    <div class="setting-details-group" *ngIf="alertSettings.serviceAlertEnabled && alertSettings.alertsEnabled">
+                        <div class="setting-detail">
+                            <label class="input-label">
+                                <span class="material-symbols-outlined">schedule</span>
+                                Nach Datum
+                            </label>
+                            <div class="input-group">
+                                <input 
+                                    type="number"
+                                    [(ngModel)]="alertSettings.serviceDaysBefore"
+                                    min="1"
+                                    max="180"
+                                    class="input-number"
+                                />
+                                <span class="input-suffix">Tage vorher</span>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-detail">
+                            <label class="input-label">
+                                <span class="material-symbols-outlined">speed</span>
+                                Nach Kilometerstand
+                            </label>
+                            <div class="input-group">
+                                <input 
+                                    type="number"
+                                    [(ngModel)]="alertSettings.serviceKmBefore"
+                                    min="100"
+                                    max="10000"
+                                    step="100"
+                                    class="input-number"
+                                />
+                                <span class="input-suffix">km vorher</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kilometerstand -->
+                    <div class="setting-row" [class.disabled]="!alertSettings.alertsEnabled">
+                        <div class="setting-info">
+                            <span class="material-symbols-outlined">route</span>
+                            <div>
+                                <label class="setting-label" [for]="'mileageAlertEnabled'">Kilometerstand-Ziel</label>
+                                <p class="setting-desc">Bei Ziel-Kilometerstand benachrichtigen</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch">
+                            <input 
+                                type="checkbox" 
+                                id="mileageAlertEnabled"
+                                [(ngModel)]="alertSettings.mileageAlertEnabled"
+                                [disabled]="!alertSettings.alertsEnabled"
+                                class="toggle-input"
+                            />
+                            <label [for]="'mileageAlertEnabled'" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-detail" *ngIf="alertSettings.mileageAlertEnabled && alertSettings.alertsEnabled">
+                        <label class="input-label">
+                            <span class="material-symbols-outlined">flag</span>
+                            Ziel-Kilometerstand
+                        </label>
+                        <div class="input-group">
+                            <input 
+                                type="number"
+                                [(ngModel)]="alertSettings.mileageTargetKm"
+                                min="1000"
+                                step="1000"
+                                class="input-number"
+                                placeholder="z.B. 200000"
+                            />
+                            <span class="input-suffix">km</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Test Alert - Kompakt -->
+                <div class="test-section" *ngIf="userCars.length > 0 && alertSettings?.alertsEnabled && !isLoadingSettings">
+                    <div class="test-header">
+                        <span class="material-symbols-outlined">mail</span>
+                        <span>Test-Benachrichtigung senden:</span>
+                    </div>
+                    <div class="test-buttons">
+                        <button 
+                            *ngFor="let car of userCars"
+                            (click)="sendTestAlert(car.id)"
+                            class="btn btn--test-small"
+                        >
+                            {{ car.name }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Admin Trigger - Kompakt -->
+                <div class="admin-trigger" *ngIf="user?.role === UserRole.ADMIN && !isLoadingSettings">
+                    <button 
+                        (click)="triggerAlertCheck()"
+                        class="btn btn--admin-small"
+                    >
+                        <span class="material-symbols-outlined">play_arrow</span>
+                        Alert-Prüfung starten (Admin)
+                    </button>
                 </div>
             </div>
 
-            <!-- Actions Section -->
-            <div class="actions-section">
-                <button class="btn btn--danger btn--large" (click)="logout()">
-                    <span class="material-symbols-outlined ms-size-20">logout</span>
+            <!-- Action Buttons - Unten -->
+            <div class="action-buttons">
+                <button 
+                    class="btn btn--primary btn--large" 
+                    (click)="saveAlertSettings()"
+                    [disabled]="isSavingSettings || isLoadingSettings"
+                >
+                    <span class="material-symbols-outlined" *ngIf="!isSavingSettings">save</span>
+                    <div class="spinner-small" *ngIf="isSavingSettings"></div>
+                    <span>{{ isSavingSettings ? 'Speichert...' : 'Einstellungen speichern' }}</span>
+                </button>
+                <button class="btn btn--danger" (click)="logout()">
+                    <span class="material-symbols-outlined">logout</span>
                     Ausloggen
                 </button>
             </div>

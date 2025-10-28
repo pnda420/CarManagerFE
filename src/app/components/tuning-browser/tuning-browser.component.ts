@@ -4,15 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../api/api.service';
 import { ToastService } from '../../shared/toasts/toast.service';
-import { 
-  Car, 
-  TuningGroup, 
-  TuningPart, 
-  CreateTuningGroupDto, 
-  CreateTuningPartDto, 
+import {
+  Car,
+  TuningGroup,
+  TuningPart,
+  CreateTuningGroupDto,
+  CreateTuningPartDto,
   UpdateTuningGroupDto,
   UpdateTuningPartDto,
-  ModStatus 
+  ModStatus
 } from '../../api/api.models';
 import { ConfirmationService } from '../../shared/confirmation/confirmation.service';
 
@@ -27,34 +27,36 @@ type SortBy = 'orderIndex' | 'title' | 'price' | 'status' | 'createdAt';
   styleUrls: ['./tuning-browser.component.scss']
 })
 export class TuningBrowserComponent implements OnInit {
-    Math = Math;
+  Math = Math;
   // Car selection
   availableCars: Car[] = [];
   car: Car | null = null;
   showCarSelection = true;
-  
+  collapsedGroups: Set<string> = new Set();
+
+
   // Data
   tuningGroups: TuningGroup[] = [];
   allParts: TuningPart[] = [];
   filteredGroups: TuningGroup[] = [];
-  
+
   // UI State
   loading = true;
   viewMode: ViewMode = 'groups';
-  
+
   // Modals
   showGroupModal = false;
   showPartModal = false;
   editingGroup: TuningGroup | null = null;
   editingPart: TuningPart | null = null;
-  
+
   // Forms
   groupForm: CreateTuningGroupDto = {
     name: '',
     orderIndex: 0,
     budgetEur: undefined
   };
-  
+
   partForm: CreateTuningPartDto = {
     groupId: '',
     title: '',
@@ -82,10 +84,26 @@ export class TuningBrowserComponent implements OnInit {
     private api: ApiService,
     private toasts: ToastService,
     private confirmationService: ConfirmationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    this.tuningGroups.forEach(group => {
+      this.collapsedGroups.add(group.id);
+    });
     this.loadAvailableCars();
+
+  }
+
+  toggleGroup(groupId: string): void {
+    if (this.collapsedGroups.has(groupId)) {
+      this.collapsedGroups.delete(groupId);
+    } else {
+      this.collapsedGroups.add(groupId);
+    }
+  }
+
+  isGroupCollapsed(groupId: string): boolean {
+    return this.collapsedGroups.has(groupId);
   }
 
   // ========== Car Management ==========
@@ -96,7 +114,7 @@ export class TuningBrowserComponent implements OnInit {
       next: (cars) => {
         this.availableCars = cars;
         this.loading = false;
-        
+
         if (cars.length === 1) {
           this.selectCar(cars[0]);
         }
@@ -127,14 +145,14 @@ export class TuningBrowserComponent implements OnInit {
 
   loadData(): void {
     if (!this.car) return;
-    
+
     this.loadTuningGroups();
     this.loadAllParts();
   }
 
   loadTuningGroups(): void {
     if (!this.car) return;
-    
+
     this.api.getAllTuningGroups(this.car.id).subscribe({
       next: (groups) => {
         this.tuningGroups = groups.sort((a, b) => a.orderIndex - b.orderIndex);
@@ -149,7 +167,7 @@ export class TuningBrowserComponent implements OnInit {
 
   loadAllParts(): void {
     if (!this.car) return;
-    
+
     this.api.getAllTuningParts(this.car.id).subscribe({
       next: (parts) => {
         this.allParts = parts;
@@ -205,7 +223,7 @@ export class TuningBrowserComponent implements OnInit {
         orderIndex: this.groupForm.orderIndex,
         budgetEur: budgetEur
       };
-      
+
       this.api.updateTuningGroup(this.car.id, this.editingGroup.id, updateDto).subscribe({
         next: (group) => {
           const index = this.tuningGroups.findIndex(g => g.id === group.id);
@@ -228,7 +246,7 @@ export class TuningBrowserComponent implements OnInit {
         ...this.groupForm,
         budgetEur: budgetEur
       };
-      
+
       this.api.createTuningGroup(this.car.id, createDto).subscribe({
         next: (group) => {
           this.tuningGroups.push(group);
@@ -247,14 +265,14 @@ export class TuningBrowserComponent implements OnInit {
 
   async deleteGroup(group: TuningGroup): Promise<void> {
     if (!this.car) return;
-    
+
     const partsInGroup = this.getGroupParts(group.id);
     let message = `Möchtest du die Gruppe "${group.name}" wirklich löschen?`;
-    
+
     if (partsInGroup.length > 0) {
       message += `\n\nACHTUNG: Diese Gruppe enthält ${partsInGroup.length} Teil(e), die ebenfalls gelöscht werden!`;
     }
-    
+
     const confirmed = await this.confirmationService.confirm({
       title: 'Gruppe löschen',
       message: message,
@@ -285,7 +303,7 @@ export class TuningBrowserComponent implements OnInit {
   openNewPartForm(groupId?: string): void {
     this.editingPart = null;
     const groupParts = groupId ? this.getGroupParts(groupId) : [];
-    
+
     this.partForm = {
       groupId: groupId || (this.tuningGroups[0]?.id || ''),
       title: '',
@@ -331,7 +349,7 @@ export class TuningBrowserComponent implements OnInit {
   calculateTotalPrice(): void {
     const quantity = Number(this.partForm.quantity) || 1;
     const unitPrice = Number(this.partForm.unitPriceEur) || 0;
-    
+
     // Only auto-calculate if totalPriceEur is not manually set
     if (unitPrice > 0 && !this.editingPart) {
       this.partForm.totalPriceEur = Number((unitPrice * quantity).toFixed(2));
@@ -343,25 +361,25 @@ export class TuningBrowserComponent implements OnInit {
    */
   private sanitizePriceFields(dto: any): any {
     const sanitized = { ...dto };
-    
+
     // Convert price fields to numbers or undefined
     if (sanitized.unitPriceEur !== undefined) {
       sanitized.unitPriceEur = sanitized.unitPriceEur ? Number(sanitized.unitPriceEur) : undefined;
     }
-    
+
     if (sanitized.totalPriceEur !== undefined) {
       sanitized.totalPriceEur = sanitized.totalPriceEur ? Number(sanitized.totalPriceEur) : undefined;
     }
-    
+
     if (sanitized.laborPriceEur !== undefined) {
       sanitized.laborPriceEur = sanitized.laborPriceEur ? Number(sanitized.laborPriceEur) : undefined;
     }
-    
+
     // Ensure quantity is a number
     if (sanitized.quantity !== undefined) {
       sanitized.quantity = Number(sanitized.quantity) || 1;
     }
-    
+
     return sanitized;
   }
 
@@ -399,7 +417,7 @@ export class TuningBrowserComponent implements OnInit {
         link: sanitizedForm.link,
         notes: sanitizedForm.notes
       };
-      
+
       this.api.updateTuningPart(this.car.id, this.editingPart.id, updateDto).subscribe({
         next: (part) => {
           const index = this.allParts.findIndex(p => p.id === part.id);
@@ -494,7 +512,7 @@ export class TuningBrowserComponent implements OnInit {
   cyclePartStatus(part: TuningPart): void {
     if (!this.car) return;
 
-    const statusOrder = [ModStatus.PLANNED, ModStatus.ORDERED, ModStatus.INSTALLED];
+    const statusOrder = [ModStatus.PLANNED, ModStatus.ORDERED, ModStatus.INSTALLED, ModStatus.DISCARDED];
     const currentIndex = statusOrder.indexOf(part.status);
     const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
 
@@ -539,10 +557,10 @@ export class TuningBrowserComponent implements OnInit {
         if (group.name.toLowerCase().includes(query)) {
           return true;
         }
-        
+
         // Check if any part in the group matches
         const groupParts = this.getGroupParts(group.id);
-        return groupParts.some(part => 
+        return groupParts.some(part =>
           part.title.toLowerCase().includes(query) ||
           part.description?.toLowerCase().includes(query)
         );
@@ -568,7 +586,7 @@ export class TuningBrowserComponent implements OnInit {
         this.allParts.sort((a, b) => a.status.localeCompare(b.status));
         break;
       case 'createdAt':
-        this.allParts.sort((a, b) => 
+        this.allParts.sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         break;
@@ -581,51 +599,51 @@ export class TuningBrowserComponent implements OnInit {
 
   getGroupParts(groupId: string): TuningPart[] {
     let parts = this.allParts.filter(p => p.groupId === groupId);
-    
+
     if (this.filterStatus) {
       parts = parts.filter(p => p.status === this.filterStatus);
     }
-    
+
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
-      parts = parts.filter(p => 
+      parts = parts.filter(p =>
         p.title.toLowerCase().includes(query) ||
         p.description?.toLowerCase().includes(query)
       );
     }
-    
+
     return parts;
   }
 
   getAllFilteredParts(): TuningPart[] {
     let parts = [...this.allParts];
-    
+
     if (this.filterStatus) {
       parts = parts.filter(p => p.status === this.filterStatus);
     }
-    
+
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
-      parts = parts.filter(p => 
+      parts = parts.filter(p =>
         p.title.toLowerCase().includes(query) ||
         p.description?.toLowerCase().includes(query)
       );
     }
-    
+
     return parts;
   }
 
   getPartsByStatus(status: ModStatus): TuningPart[] {
     let parts = this.allParts.filter(p => p.status === status);
-    
+
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
-      parts = parts.filter(p => 
+      parts = parts.filter(p =>
         p.title.toLowerCase().includes(query) ||
         p.description?.toLowerCase().includes(query)
       );
     }
-    
+
     return parts;
   }
 
@@ -697,10 +715,10 @@ export class TuningBrowserComponent implements OnInit {
     const quantity = this.parseNumber(part.quantity, 1); // Default to 1 if not set
     const totalPrice = this.parseNumber(part.totalPriceEur);
     const laborPrice = this.parseNumber(part.laborPriceEur);
-    
+
     // Use totalPrice if explicitly set, otherwise calculate from unit * quantity
     let partTotal = 0;
-    
+
     if (totalPrice > 0) {
       // If totalPriceEur is explicitly set, use it
       partTotal = totalPrice;
@@ -708,10 +726,10 @@ export class TuningBrowserComponent implements OnInit {
       // Otherwise calculate from unit price * quantity
       partTotal = unitPrice * quantity;
     }
-    
+
     // Add labor costs
     partTotal += laborPrice;
-    
+
     return partTotal;
   }
 
@@ -721,13 +739,13 @@ export class TuningBrowserComponent implements OnInit {
   getBudgetPercentage(groupId: string): number {
     const group = this.tuningGroups.find(g => g.id === groupId);
     if (!group) return 0;
-    
+
     const budget = this.parseNumber(group.budgetEur);
     if (budget === 0) return 0;
-    
+
     const spent = this.getGroupTotalPrice(groupId);
     const percentage = (spent / budget) * 100;
-    
+
     // Cap at 150% for visual representation
     return Math.min(percentage, 150);
   }
@@ -738,10 +756,10 @@ export class TuningBrowserComponent implements OnInit {
   getGroupRemainingBudget(groupId: string): number {
     const group = this.tuningGroups.find(g => g.id === groupId);
     if (!group) return 0;
-    
+
     const budget = this.parseNumber(group.budgetEur);
     const spent = this.getGroupTotalPrice(groupId);
-    
+
     return budget - spent;
   }
 
@@ -761,7 +779,7 @@ export class TuningBrowserComponent implements OnInit {
     if (value === null || value === undefined || value === '') {
       return fallback;
     }
-    
+
     const parsed = Number(value);
     return isNaN(parsed) ? fallback : parsed;
   }
@@ -786,7 +804,7 @@ export class TuningBrowserComponent implements OnInit {
     if (price === undefined || price === null || isNaN(price)) {
       return '-';
     }
-    
+
     return new Intl.NumberFormat('de-DE', {
       style: 'currency',
       currency: 'EUR',
@@ -802,7 +820,7 @@ export class TuningBrowserComponent implements OnInit {
     if (num === undefined || num === null || isNaN(num)) {
       return '0';
     }
-    
+
     return new Intl.NumberFormat('de-DE').format(num);
   }
 
@@ -813,7 +831,7 @@ export class TuningBrowserComponent implements OnInit {
     return this.statuses.map(status => {
       const parts = this.allParts.filter(p => p.status === status);
       const total = parts.reduce((sum, part) => sum + this.getPartTotalPrice(part), 0);
-      
+
       return {
         status,
         count: parts.length,

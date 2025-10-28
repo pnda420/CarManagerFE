@@ -25,16 +25,10 @@
       </div>
 
       <div class="cars-grid">
-        <div 
-          *ngFor="let car of availableCars" 
-          class="car-selection-card"
-          (click)="selectCar(car)"
-        >
+        <div *ngFor="let car of availableCars" class="car-selection-card" (click)="selectCar(car)">
           <div class="car-image">
-            <img 
-              [src]="car.images && car.images.length > 0 ? car.images[0].image : 'assets/images/car-placeholder.jpg'" 
-              [alt]="car.name"
-            />
+            <img [src]="car.images && car.images.length > 0 ? car.images[0].image : 'assets/images/car-placeholder.jpg'"
+              [alt]="car.name" />
           </div>
           <div class="car-info">
             <h3>{{ car.name }}</h3>
@@ -64,12 +58,10 @@
     <div class="car-header-card">
       <div class="car-header-content">
         <div class="car-image-preview">
-          <img 
-            [src]="car.images && car.images.length > 0 ? car.images[0].image : 'assets/images/car-placeholder.jpg'" 
-            [alt]="car.name"
-          />
+          <img [src]="car.images && car.images.length > 0 ? car.images[0].image : 'assets/images/car-placeholder.jpg'"
+            [alt]="car.name" />
         </div>
-        
+
         <div class="car-info-section">
           <div class="car-title-row">
             <div>
@@ -80,7 +72,7 @@
               <span class="material-symbols-outlined">swap_horiz</span>
             </button>
           </div>
-          
+
           <div class="car-quick-stats">
             <span class="quick-stat">
               <span class="material-symbols-outlined">speed</span>
@@ -110,7 +102,7 @@
           <span class="budget-value">{{ formatPrice(getTotalBudget()) }}</span>
         </div>
       </div>
-      
+
       <div class="budget-card budget-card--spent">
         <div class="budget-icon">
           <span class="material-symbols-outlined">shopping_cart</span>
@@ -120,7 +112,7 @@
           <span class="budget-value">{{ formatPrice(getTotalSpent()) }}</span>
         </div>
       </div>
-      
+
       <div class="budget-card budget-card--remaining">
         <div class="budget-icon">
           <span class="material-symbols-outlined">savings</span>
@@ -130,7 +122,7 @@
           <span class="budget-value">{{ formatPrice(getRemainingBudget()) }}</span>
         </div>
       </div>
-      
+
       <div class="budget-card budget-card--parts">
         <div class="budget-icon">
           <span class="material-symbols-outlined">inventory_2</span>
@@ -144,31 +136,35 @@
 
     <!-- Status Overview -->
     <div class="status-overview">
-      <div class="status-item status-item--planned" (click)="filterStatus = filterStatus === ModStatus.PLANNED ? null : ModStatus.PLANNED; applyFilters()">
+      <div class="status-item status-item--planned"
+        (click)="filterStatus = filterStatus === ModStatus.PLANNED ? null : ModStatus.PLANNED; applyFilters()">
         <span class="material-symbols-outlined">schedule</span>
         <div class="status-info">
           <span class="status-count">{{ getPartsByStatus(ModStatus.PLANNED).length }}</span>
           <span class="status-label">Geplant</span>
         </div>
       </div>
-      
-      <div class="status-item status-item--ordered" (click)="filterStatus = filterStatus === ModStatus.ORDERED ? null : ModStatus.ORDERED; applyFilters()">
+
+      <div class="status-item status-item--ordered"
+        (click)="filterStatus = filterStatus === ModStatus.ORDERED ? null : ModStatus.ORDERED; applyFilters()">
         <span class="material-symbols-outlined">local_shipping</span>
         <div class="status-info">
           <span class="status-count">{{ getPartsByStatus(ModStatus.ORDERED).length }}</span>
           <span class="status-label">Bestellt</span>
         </div>
       </div>
-      
-      <div class="status-item status-item--installed" (click)="filterStatus = filterStatus === ModStatus.INSTALLED ? null : ModStatus.INSTALLED; applyFilters()">
+
+      <div class="status-item status-item--installed"
+        (click)="filterStatus = filterStatus === ModStatus.INSTALLED ? null : ModStatus.INSTALLED; applyFilters()">
         <span class="material-symbols-outlined">check_circle</span>
         <div class="status-info">
           <span class="status-count">{{ getPartsByStatus(ModStatus.INSTALLED).length }}</span>
           <span class="status-label">Verbaut</span>
         </div>
       </div>
-      
-      <div class="status-item status-item--discarded" (click)="filterStatus = filterStatus === ModStatus.DISCARDED ? null : ModStatus.DISCARDED; applyFilters()">
+
+      <div class="status-item status-item--discarded"
+        (click)="filterStatus = filterStatus === ModStatus.DISCARDED ? null : ModStatus.DISCARDED; applyFilters()">
         <span class="material-symbols-outlined">cancel</span>
         <div class="status-info">
           <span class="status-count">{{ getPartsByStatus(ModStatus.DISCARDED).length }}</span>
@@ -182,18 +178,13 @@
       <div class="toolbar-left">
         <div class="search-box">
           <span class="material-symbols-outlined">search</span>
-          <input 
-            type="text" 
-            [(ngModel)]="searchQuery"
-            (ngModelChange)="onSearchChange()"
-            placeholder="Suche nach Teilen..."
-            class="search-input"
-          />
+          <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()"
+            placeholder="Suche nach Teilen..." class="search-input" />
           <button *ngIf="searchQuery" class="btn-clear" (click)="clearSearch()">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
-        
+
         <select [(ngModel)]="sortBy" (ngModelChange)="applySorting()" class="sort-select">
           <option value="orderIndex">Standard</option>
           <option value="title">Name</option>
@@ -202,7 +193,7 @@
           <option value="createdAt">Datum</option>
         </select>
       </div>
-      
+
       <div class="toolbar-right">
 
         <button class="btn btn--primary" (click)="openNewGroupForm()">
@@ -215,20 +206,22 @@
     <!-- Groups View -->
     <div *ngIf="viewMode === 'groups'" class="groups-view">
       <div *ngFor="let group of filteredGroups" class="group-section">
-        <div class="group-header">
+        <div class="group-header"  style="cursor: pointer;">
+
           <div class="group-header-left">
             <h2>{{ group.name }}</h2>
-            <span class="parts-count">{{ getGroupParts(group.id).length }} {{ getGroupParts(group.id).length === 1 ? 'Teil' : 'Teile' }}</span>
+            <span class="material-symbols-outlined collapse-icon" (click)="toggleGroup(group.id)">
+              {{ isGroupCollapsed(group.id) ? 'expand_more' : 'expand_less' }}
+            </span>
+            <span class="parts-count">{{ getGroupParts(group.id).length }} {{ getGroupParts(group.id).length === 1 ?
+              'Teil' : 'Teile' }}</span>
           </div>
-          
+
           <div class="group-header-right">
             <div class="group-budget-info" *ngIf="group.budgetEur">
               <div class="budget-bar">
-                <div 
-                  class="budget-fill" 
-                  [style.width.%]="getBudgetPercentage(group.id)"
-                  [class.over-budget]="getBudgetPercentage(group.id) > 100"
-                ></div>
+                <div class="budget-fill" [style.width.%]="getBudgetPercentage(group.id)"
+                  [class.over-budget]="getBudgetPercentage(group.id) > 100"></div>
               </div>
               <div class="budget-text">
                 <span class="spent">{{ formatPrice(getGroupTotalPrice(group.id)) }}</span>
@@ -236,7 +229,7 @@
                 <span class="total">{{ formatPrice(group.budgetEur) }}</span>
               </div>
             </div>
-            
+
             <button class="btn-icon" (click)="editGroup(group)" title="Gruppe bearbeiten">
               <span class="material-symbols-outlined">edit</span>
             </button>
@@ -250,7 +243,7 @@
           </div>
         </div>
 
-        <div class="parts-grid">
+        <div class="parts-grid" *ngIf="!isGroupCollapsed(group.id)">
           <div *ngFor="let part of getGroupParts(group.id)" class="part-card" [class]="'status-' + part.status">
             <div class="part-card-header">
               <div class="part-status-badge" [class]="'status-' + part.status">
@@ -273,7 +266,7 @@
             </div>
 
             <h3 class="part-title">{{ part.title }}</h3>
-            
+
             <p *ngIf="part.description" class="part-description">
               {{ part.description }}
             </p>
@@ -283,12 +276,12 @@
                 <span class="material-symbols-outlined">counter_1</span>
                 <span>{{ part.quantity }}x</span>
               </div>
-              
+
               <div *ngIf="part.unitPriceEur" class="detail-item">
                 <span class="material-symbols-outlined">sell</span>
                 <span>{{ formatPrice(part.unitPriceEur) }}</span>
               </div>
-              
+
               <div *ngIf="part.laborPriceEur" class="detail-item">
                 <span class="material-symbols-outlined">build</span>
                 <span>{{ formatPrice(part.laborPriceEur) }}</span>
@@ -300,14 +293,16 @@
                 <span class="total-label">Gesamt</span>
                 <span class="total-value">{{ formatPrice(getPartTotalPrice(part)) }}</span>
               </div>
-              
-              <a *ngIf="part.link" [href]="part.link" target="_blank" class="part-link" (click)="$event.stopPropagation()">
+
+              <a *ngIf="part.link" [href]="part.link" target="_blank" class="part-link"
+                (click)="$event.stopPropagation()">
                 <span class="material-symbols-outlined">link</span>
               </a>
             </div>
           </div>
 
-          <button *ngIf="getGroupParts(group.id).length === 0" class="empty-group-btn" (click)="openNewPartForm(group.id)">
+          <button *ngIf="getGroupParts(group.id).length === 0" class="empty-group-btn"
+            (click)="openNewPartForm(group.id)">
             <span class="material-symbols-outlined">add_circle</span>
             <span>Erstes Teil hinzufügen</span>
           </button>
@@ -345,7 +340,7 @@
                 {{ getStatusLabel(part.status) }}
               </div>
             </div>
-            
+
             <div class="col-title">
               <div class="title-cell">
                 <strong>{{ part.title }}</strong>
@@ -355,27 +350,27 @@
                 </a>
               </div>
             </div>
-            
+
             <div class="col-group">
               {{ getGroupName(part.groupId) }}
             </div>
-            
+
             <div class="col-quantity">
               {{ part.quantity || 1 }}x
             </div>
-            
+
             <div class="col-price">
               {{ part.unitPriceEur ? formatPrice(part.unitPriceEur) : '-' }}
             </div>
-            
+
             <div class="col-labor">
               {{ part.laborPriceEur ? formatPrice(part.laborPriceEur) : '-' }}
             </div>
-            
+
             <div class="col-total">
               <strong>{{ formatPrice((part.totalPriceEur || 0) + (part.laborPriceEur || 0)) }}</strong>
             </div>
-            
+
             <div class="col-actions">
               <button class="btn-icon-small" (click)="cyclePartStatus(part)" title="Status ändern">
                 <span class="material-symbols-outlined">fast_forward</span>
@@ -410,11 +405,7 @@
           </div>
 
           <div class="column-content">
-            <div 
-              *ngFor="let part of getPartsByStatus(status)" 
-              class="board-card"
-              [class]="'status-' + status"
-            >
+            <div *ngFor="let part of getPartsByStatus(status)" class="board-card" [class]="'status-' + status">
               <div class="board-card-header">
                 <span class="group-tag">{{ getGroupName(part.groupId) }}</span>
                 <div class="card-actions">
@@ -428,7 +419,7 @@
               </div>
 
               <h4>{{ part.title }}</h4>
-              
+
               <p *ngIf="part.description" class="card-description">
                 {{ part.description }}
               </p>
@@ -515,7 +506,8 @@
 
       <div class="form-group">
         <label>Beschreibung</label>
-        <textarea [(ngModel)]="partForm.description" class="form-textarea" rows="3" placeholder="Details, Spezifikationen..."></textarea>
+        <textarea [(ngModel)]="partForm.description" class="form-textarea" rows="3"
+          placeholder="Details, Spezifikationen..."></textarea>
       </div>
 
       <div class="form-row">
@@ -568,7 +560,8 @@
 
       <div class="form-group">
         <label>Notizen</label>
-        <textarea [(ngModel)]="partForm.notes" class="form-textarea" rows="2" placeholder="Zusätzliche Informationen..."></textarea>
+        <textarea [(ngModel)]="partForm.notes" class="form-textarea" rows="2"
+          placeholder="Zusätzliche Informationen..."></textarea>
       </div>
     </div>
 

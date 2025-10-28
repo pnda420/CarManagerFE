@@ -229,6 +229,40 @@ export interface UpdateTuningGroupDto {
   budgetEur?: number;
 }
 
+export interface AlertSettings {
+  id: string;
+  userId: string;
+  alertsEnabled: boolean;
+  tuvAlertEnabled: boolean;
+  serviceAlertEnabled: boolean;
+  mileageAlertEnabled: boolean;
+  tuvDaysBefore: number;
+  serviceDaysBefore: number;
+  serviceKmBefore: number;
+  mileageTargetKm: number | null;
+  lastAlertsSent: {
+    [carId: string]: {
+      tuv?: string;
+      service?: string;
+      mileage?: string;
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateAlertSettingsDto {
+  alertsEnabled?: boolean;
+  tuvAlertEnabled?: boolean;
+  serviceAlertEnabled?: boolean;
+  mileageAlertEnabled?: boolean;
+  tuvDaysBefore?: number;
+  serviceDaysBefore?: number;
+  serviceKmBefore?: number;
+  mileageTargetKm?: number;
+}
+
+
 export interface TuningPart {
   id: string;
   carId: string;

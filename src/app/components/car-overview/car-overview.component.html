@@ -1,6 +1,4 @@
 <!-- src/app/features/cars/cars-overview/cars-overview.component.html -->
-<!-- <app-page-title title="Meine Autos"></app-page-title> -->
-
 <section class="cars-page">
     <div class="container">
 
@@ -8,11 +6,11 @@
         <div class="page-header">
             <div class="header-info">
                 <h2>Meine Garage</h2>
-                <p>Verwalte deine Fahrzeuge und behalte den Überblick</p>
+                <p>Verwalte deine Fahrzeuge</p>
             </div>
-            <button class="btn btn--primary btn--large" (click)="openCreateModal()">
+            <button class="btn btn--primary" (click)="openCreateModal()">
                 <span class="material-symbols-outlined">add</span>
-                Neues Auto
+                <span class="btn-text">Neues Auto</span>
             </button>
         </div>
 
@@ -28,8 +26,8 @@
                 <span class="material-symbols-outlined">directions_car</span>
             </div>
             <h3>Noch keine Autos</h3>
-            <p>Füge dein erstes Auto hinzu, um loszulegen!</p>
-            <button class="btn btn--primary btn--large" (click)="openCreateModal()">
+            <p>Füge dein erstes Auto hinzu!</p>
+            <button class="btn btn--primary" (click)="openCreateModal()">
                 <span class="material-symbols-outlined">add</span>
                 Erstes Auto hinzufügen
             </button>
@@ -79,15 +77,14 @@
 
                     <!-- Actions -->
                     <div class="car-actions">
-                        <button class="btn btn--secondary btn--small" (click)="viewCarDetails(car)">
+                        <button class="btn btn--secondary" (click)="viewCarDetails(car)">
                             <span class="material-symbols-outlined">visibility</span>
-                            Details
+                            <span class="btn-text">Details</span>
                         </button>
-                        <button class="btn btn--ghost btn--small" (click)="openEditModal(car)">
+                        <button class="btn btn--ghost" (click)="openEditModal(car)">
                             <span class="material-symbols-outlined">edit</span>
-                            Bearbeiten
                         </button>
-                        <button class="btn btn--danger-ghost btn--small" (click)="deleteCar(car)">
+                        <button class="btn btn--danger-ghost" (click)="deleteCar(car)">
                             <span class="material-symbols-outlined">delete</span>
                         </button>
                     </div>
